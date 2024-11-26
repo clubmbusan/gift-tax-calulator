@@ -12,11 +12,25 @@ function parseCurrency(value) {
     return parseInt(value.replace(/,/g, ''), 10) || 0;
 }
 
+function formatCurrencyInput(input) {
+    input.value = input.value
+        .replace(/[^0-9]/g, '') // 숫자 외 문자 제거
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 콤마 추가
+}
+
+// 페이지 로드 시 초기화 (문제 1 해결)
+window.onload = function () {
+    const cashAmountInput = document.getElementById('cashAmount');
+    if (cashAmountInput) {
+        cashAmountInput.addEventListener('input', function () {
+            formatCurrencyInput(cashAmountInput);
+        });
+    }
+};
+
 document.addEventListener('input', function (e) {
     if (e.target.classList.contains('currency')) {
-        e.target.value = e.target.value
-            .replace(/[^0-9]/g, '') // 숫자 외 문자 제거
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 콤마 추가
+        formatCurrencyInput(e.target);
     }
 });
 
@@ -29,27 +43,24 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
         return 0; // 날짜가 없거나 잘못된 경우 가산세 없음
     }
 
-    // 신고 기한 계산 (증여일 + 3개월)
     const dueDate = new Date(giftDateObj);
     dueDate.setMonth(dueDate.getMonth() + 3);
 
-    // 날짜 비교
     if (submissionDateObj <= dueDate) {
-        return 0; // 신고 기한 내 가산세 없음
+        return 0; // 신고 기한 내
     }
 
-    // 연장된 신고 기한 (증여일 + 6개월)
     const extendedDueDate = new Date(giftDateObj);
     extendedDueDate.setMonth(extendedDueDate.getMonth() + 6);
 
     if (submissionDateObj <= extendedDueDate) {
-        return giftTax * 0.1; // 3개월 초과 ~ 6개월 이내: 가산세 10%
+        return giftTax * 0.1; // 3개월 초과 ~ 6개월 이내
     }
 
-    return giftTax * 0.2; // 6개월 초과: 가산세 20%
+    return giftTax * 0.2; // 6개월 초과
 }
 
-// 증여세 계산 로직 수정 (문제 1 해결)
+// 증여세 계산 로직 (문제 2 해결)
 function calculateGiftTax(taxableAmount) {
     let tax = 0;
     for (let i = 0; i < taxBrackets.length; i++) {
@@ -78,6 +89,10 @@ document.getElementById('assetType').addEventListener('change', function () {
             <label for="cashAmount">현금 금액 (원):</label>
             <input type="text" id="cashAmount" class="currency" placeholder="예: 10,000,000">
         `;
+        const cashAmountInput = document.getElementById('cashAmount');
+        cashAmountInput.addEventListener('input', function () {
+            formatCurrencyInput(cashAmountInput);
+        });
     } else if (selectedType === 'realEstate') {
         additionalFields.innerHTML = `
             <label for="realEstateValue">부동산 공시가격 (원):</label>
@@ -93,12 +108,12 @@ document.getElementById('assetType').addEventListener('change', function () {
     }
 });
 
-// 과거 증여 금액 추가 (문제 2 해결)
+// 과거 증여 금액 추가
 document.getElementById('addGiftButton').addEventListener('click', function () {
     const previousGifts = document.getElementById('previousGifts');
     const inputField = document.createElement('input');
     inputField.type = 'text';
-    inputField.classList.add('currency'); // 콤마 처리를 위한 클래스 추가
+    inputField.classList.add('currency');
     inputField.placeholder = '예: 10,000,000';
     inputField.style.marginBottom = "10px";
     previousGifts.appendChild(inputField);
@@ -108,7 +123,6 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
 document.getElementById('taxForm').onsubmit = function (e) {
     e.preventDefault();
 
-    // 재산 유형에 따른 금액 계산
     const selectedType = document.getElementById('assetType').value;
     let giftAmount = 0;
 
@@ -122,7 +136,6 @@ document.getElementById('taxForm').onsubmit = function (e) {
         giftAmount = stockQuantity * stockPrice;
     }
 
-    // 과거 증여 금액 합산
     const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
     let previousGiftTotal = 0;
     previousGiftInputs.forEach(input => {
@@ -135,15 +148,12 @@ document.getElementById('taxForm').onsubmit = function (e) {
     const exemptionLimit = 50000000; // 기본 공제
     const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
 
-    // 증여세 계산
     const giftTax = calculateGiftTax(taxableAmount);
 
-    // 가산세 계산
     const giftDate = document.getElementById('giftDate')?.value;
     const submissionDate = document.getElementById('submissionDate')?.value;
     const latePenalty = calculateLatePenalty(submissionDate, giftDate, giftTax);
 
-    // 결과 표시
     const resultDiv = document.getElementById('result');
     resultDiv.innerHTML = `
         <p><strong>증여세:</strong> ${giftTax.toLocaleString()}원</p>
