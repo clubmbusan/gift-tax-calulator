@@ -38,7 +38,7 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
     return giftTax * 0.2; // 6개월 초과
 }
 
-// 증여세 계산 로직 수정 (누진세 계산 오류 해결)
+// 증여세 계산 로직 (수정된 부분)
 function calculateGiftTax(taxableAmount) {
     let tax = 0;
     for (let i = 0; i < taxBrackets.length; i++) {
@@ -46,14 +46,16 @@ function calculateGiftTax(taxableAmount) {
         const prevLimit = taxBrackets[i - 1]?.limit || 0;
 
         if (taxableAmount > bracket.limit) {
+            // 해당 구간의 최대 금액에 대해 세율 적용
             tax += (bracket.limit - prevLimit) * (bracket.rate / 100);
         } else {
+            // 남은 금액에 대해 세율 적용
             tax += (taxableAmount - prevLimit) * (bracket.rate / 100);
             tax -= bracket.deduction; // 누진 공제 적용
             break;
         }
     }
-    return Math.max(tax, 0);
+    return Math.max(tax, 0); // 음수 방지
 }
 
 // 결과 출력 (기존 로직 유지)
