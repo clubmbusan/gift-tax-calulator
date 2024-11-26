@@ -18,7 +18,7 @@ function formatCurrencyInput(input) {
         .replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 콤마 추가
 }
 
-// 페이지 로드 시 초기화 (문제 1 해결)
+// 페이지 로드 시 초기화
 window.onload = function () {
     const cashAmountInput = document.getElementById('cashAmount');
     if (cashAmountInput) {
@@ -60,7 +60,7 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
     return giftTax * 0.2; // 6개월 초과
 }
 
-// 증여세 계산 로직 (문제 2 해결)
+// 증여세 계산 로직
 function calculateGiftTax(taxableAmount) {
     let tax = 0;
     for (let i = 0; i < taxBrackets.length; i++) {
@@ -119,10 +119,11 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
     previousGifts.appendChild(inputField);
 });
 
-// 결과 출력
+// 결과 출력 (기존 로직 유지)
 document.getElementById('taxForm').onsubmit = function (e) {
     e.preventDefault();
 
+    // 재산 유형에 따른 금액 계산
     const selectedType = document.getElementById('assetType').value;
     let giftAmount = 0;
 
@@ -136,6 +137,7 @@ document.getElementById('taxForm').onsubmit = function (e) {
         giftAmount = stockQuantity * stockPrice;
     }
 
+    // 과거 증여 금액 합산
     const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
     let previousGiftTotal = 0;
     previousGiftInputs.forEach(input => {
@@ -148,12 +150,15 @@ document.getElementById('taxForm').onsubmit = function (e) {
     const exemptionLimit = 50000000; // 기본 공제
     const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
 
+    // 증여세 계산
     const giftTax = calculateGiftTax(taxableAmount);
 
+    // 가산세 계산
     const giftDate = document.getElementById('giftDate')?.value;
     const submissionDate = document.getElementById('submissionDate')?.value;
     const latePenalty = calculateLatePenalty(submissionDate, giftDate, giftTax);
 
+    // 결과 표시
     const resultDiv = document.getElementById('result');
     resultDiv.innerHTML = `
         <p><strong>증여세:</strong> ${giftTax.toLocaleString()}원</p>
