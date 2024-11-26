@@ -85,8 +85,6 @@ function calculateGiftTax(taxableAmount) {
 }
 
 // 결과 출력 - 사용자 입력값으로 증여세, 가산세, 최종 세액을 계산하여 출력
-document.getElementById('taxForm').onsubmit = function (e) {
-    e.preventDefault(); // 기본 폼 제출 동작 방지
 document.getElementById('assetType').addEventListener('change', function () {
     const selectedType = this.value;
     const additionalFields = document.getElementById('additionalFields');
@@ -111,6 +109,7 @@ document.getElementById('assetType').addEventListener('change', function () {
         `;
     }
 });
+
 
     // 재산 유형에 따라 증여 금액 계산
     const selectedType = document.getElementById('assetType').value; // 재산 유형 선택 값
@@ -165,6 +164,7 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
 
     previousGifts.appendChild(newGiftField); // 추가된 필드를 DOM에 삽입
 });
+
 
     // 과거 증여 금액 합산
     const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input'); // 과거 증여 금액 입력 필드들
