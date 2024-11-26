@@ -20,7 +20,7 @@ document.addEventListener('input', function (e) {
     }
 });
 
-// 가산세 계산
+// 가산세 계산 (수정된 함수)
 function calculateLatePenalty(submissionDate, giftDate, giftTax) {
     const giftDateObj = new Date(giftDate);
     const submissionDateObj = new Date(submissionDate);
@@ -29,12 +29,24 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
         return 0; // 날짜가 없거나 잘못된 경우 가산세 없음
     }
 
-    const diffInTime = submissionDateObj - giftDateObj;
-    const diffInDays = diffInTime / (1000 * 3600 * 24);
+    // 신고 기한 계산 (증여일 + 3개월)
+    const dueDate = new Date(giftDateObj);
+    dueDate.setMonth(dueDate.getMonth() + 3); // 3개월 추가
 
-    if (diffInDays <= 0) return 0; // 신고 기한 초과 없음
-    if (diffInDays <= 90) return giftTax * 0.1; // 3개월 초과
-    return giftTax * 0.2; // 6개월 초과
+    // 날짜 비교
+    if (submissionDateObj <= dueDate) {
+        return 0; // 신고 기한 내 가산세 없음
+    }
+
+    // 연장된 신고 기한 (증여일 + 6개월)
+    const extendedDueDate = new Date(giftDateObj);
+    extendedDueDate.setMonth(extendedDueDate.getMonth() + 6);
+
+    if (submissionDateObj <= extendedDueDate) {
+        return giftTax * 0.1; // 3개월 초과 ~ 6개월 이내: 가산세 10%
+    }
+
+    return giftTax * 0.2; // 6개월 초과: 가산세 20%
 }
 
 // 증여세 계산 로직
