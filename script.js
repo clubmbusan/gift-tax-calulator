@@ -87,6 +87,30 @@ function calculateGiftTax(taxableAmount) {
 // 결과 출력 - 사용자 입력값으로 증여세, 가산세, 최종 세액을 계산하여 출력
 document.getElementById('taxForm').onsubmit = function (e) {
     e.preventDefault(); // 기본 폼 제출 동작 방지
+document.getElementById('assetType').addEventListener('change', function () {
+    const selectedType = this.value;
+    const additionalFields = document.getElementById('additionalFields');
+    additionalFields.innerHTML = ''; // 기존 필드 초기화
+
+    if (selectedType === 'cash') {
+        additionalFields.innerHTML = `
+            <label for="cashAmount">현금 금액 (원):</label>
+            <input type="text" id="cashAmount" placeholder="예: 10,000,000">
+        `;
+    } else if (selectedType === 'realEstate') {
+        additionalFields.innerHTML = `
+            <label for="realEstateValue">부동산 가액 (원):</label>
+            <input type="text" id="realEstateValue" placeholder="예: 300,000,000">
+        `;
+    } else if (selectedType === 'stock') {
+        additionalFields.innerHTML = `
+            <label for="stockQuantity">주식 매수 수량:</label>
+            <input type="number" id="stockQuantity" placeholder="수량 입력">
+            <label for="stockPrice">주당 금액 (원):</label>
+            <input type="text" id="stockPrice" placeholder="예: 50,000">
+        `;
+    }
+});
 
     // 재산 유형에 따라 증여 금액 계산
     const selectedType = document.getElementById('assetType').value; // 재산 유형 선택 값
@@ -126,6 +150,21 @@ document.getElementById('taxForm').onsubmit = function (e) {
         default: // 기본 공제 (성년 자녀)
             exemptionLimit = 50000000;
     }
+document.getElementById('addGiftButton').addEventListener('click', function () {
+    const previousGifts = document.getElementById('previousGifts');
+
+    // 새로운 증여 금액 입력 필드 추가
+    const newGiftField = document.createElement('div');
+    newGiftField.className = 'gift-entry';
+    newGiftField.innerHTML = `
+        <label for="giftDate">증여일:</label>
+        <input type="date" class="giftDate" placeholder="연도-월-일">
+        <label for="giftAmount">증여 금액 (원):</label>
+        <input type="text" class="giftAmount" placeholder="금액 입력">
+    `;
+
+    previousGifts.appendChild(newGiftField); // 추가된 필드를 DOM에 삽입
+});
 
     // 과거 증여 금액 합산
     const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input'); // 과거 증여 금액 입력 필드들
