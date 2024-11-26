@@ -7,10 +7,29 @@ const taxBrackets = [
     { limit: Infinity, rate: 50, deduction: 460000000 }
 ];
 
+// 증여세 계산 로직 추가
+function calculateGiftTax(taxableAmount) {
+    let tax = 0;
+    for (let i = 0; i < taxBrackets.length; i++) {
+        const bracket = taxBrackets[i];
+        const prevLimit = taxBrackets[i - 1]?.limit || 0;
+
+        if (taxableAmount > bracket.limit) {
+            tax += (bracket.limit - prevLimit) * (bracket.rate / 100);
+        } else {
+            tax += (taxableAmount - prevLimit) * (bracket.rate / 100);
+            tax -= bracket.deduction; // 누진 공제 적용
+            break;
+        }
+    }
+    return Math.max(tax, 0); // 음수 방지
+}
+
 // 금액 입력 시 콤마 처리
 function parseCurrency(value) {
     return parseInt(value.replace(/,/g, ''), 10) || 0;
 }
+
 
 // 가산세 계산
 function calculateLatePenalty(submissionDate, giftDate, giftTax) {
@@ -58,7 +77,7 @@ function calculateGiftTax(taxableAmount) {
     return Math.max(tax, 0); // 음수 방지
 }
 
-// 결과 출력 (기존 로직 유지)
+// 결과 출력 (수정된 부분)
 document.getElementById('taxForm').onsubmit = function (e) {
     e.preventDefault();
 
@@ -76,6 +95,30 @@ document.getElementById('taxForm').onsubmit = function (e) {
         giftAmount = stockQuantity * stockPrice;
     }
 
+    // 관계 공제 금액 설정
+    const relationship = document.getElementById('relationship').value;
+    let exemptionLimit = 0;
+
+    switch (relationship) {
+        case 'child':
+            exemptionLimit = 50000000; // 성년 자녀 공제
+            break;
+        case 'minorChild':
+            exemptionLimit = 20000000; // 미성년 자녀 공제
+            break;
+        case 'spouse':
+            exemptionLimit = 600000000; // 배우자 공제
+            break;
+        case 'inLaw':
+            exemptionLimit = 50000000; // 사위/며느리 공제
+            break;
+        case 'other':
+            exemptionLimit = 10000000; // 기타 공제
+            break;
+        default:
+            exemptionLimit = 50000000; // 기본 공제
+    }
+
     // 과거 증여 금액 합산
     const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
     let previousGiftTotal = 0;
@@ -86,7 +129,7 @@ document.getElementById('taxForm').onsubmit = function (e) {
         }
     });
 
-    const exemptionLimit = 50000000; // 기본 공제
+    // 과세 표준 계산
     const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
 
     // 증여세 계산
