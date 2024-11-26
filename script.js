@@ -13,14 +13,14 @@ function parseCurrency(value) {
 }
 
 document.addEventListener('input', function (e) {
-    if (e.target.id === 'cashAmount' || e.target.id === 'realEstateValue' || e.target.id === 'stockPrice') {
+    if (e.target.classList.contains('currency')) {
         e.target.value = e.target.value
             .replace(/[^0-9]/g, '') // 숫자 외 문자 제거
             .replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 콤마 추가
     }
 });
 
-// 가산세 계산 (수정된 함수)
+// 가산세 계산
 function calculateLatePenalty(submissionDate, giftDate, giftTax) {
     const giftDateObj = new Date(giftDate);
     const submissionDateObj = new Date(submissionDate);
@@ -31,7 +31,7 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
 
     // 신고 기한 계산 (증여일 + 3개월)
     const dueDate = new Date(giftDateObj);
-    dueDate.setMonth(dueDate.getMonth() + 3); // 3개월 추가
+    dueDate.setMonth(dueDate.getMonth() + 3);
 
     // 날짜 비교
     if (submissionDateObj <= dueDate) {
@@ -49,7 +49,7 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
     return giftTax * 0.2; // 6개월 초과: 가산세 20%
 }
 
-// 증여세 계산 로직
+// 증여세 계산 로직 수정 (문제 1 해결)
 function calculateGiftTax(taxableAmount) {
     let tax = 0;
     for (let i = 0; i < taxBrackets.length; i++) {
@@ -60,7 +60,7 @@ function calculateGiftTax(taxableAmount) {
             tax += (bracket.limit - prevLimit) * (bracket.rate / 100);
         } else {
             tax += (taxableAmount - prevLimit) * (bracket.rate / 100);
-            tax -= bracket.deduction;
+            tax -= bracket.deduction; // 누진 공제 적용
             break;
         }
     }
@@ -76,28 +76,29 @@ document.getElementById('assetType').addEventListener('change', function () {
     if (selectedType === 'cash') {
         additionalFields.innerHTML = `
             <label for="cashAmount">현금 금액 (원):</label>
-            <input type="text" id="cashAmount" placeholder="예: 10,000,000">
+            <input type="text" id="cashAmount" class="currency" placeholder="예: 10,000,000">
         `;
     } else if (selectedType === 'realEstate') {
         additionalFields.innerHTML = `
             <label for="realEstateValue">부동산 공시가격 (원):</label>
-            <input type="text" id="realEstateValue" placeholder="예: 500,000,000">
+            <input type="text" id="realEstateValue" class="currency" placeholder="예: 500,000,000">
         `;
     } else if (selectedType === 'stock') {
         additionalFields.innerHTML = `
             <label for="stockQuantity">주식 수량:</label>
             <input type="number" id="stockQuantity" placeholder="예: 100">
             <label for="stockPrice">증여일 기준 주가 (원):</label>
-            <input type="text" id="stockPrice" placeholder="예: 50,000">
+            <input type="text" id="stockPrice" class="currency" placeholder="예: 50,000">
         `;
     }
 });
 
-// 과거 증여 금액 추가
+// 과거 증여 금액 추가 (문제 2 해결)
 document.getElementById('addGiftButton').addEventListener('click', function () {
     const previousGifts = document.getElementById('previousGifts');
     const inputField = document.createElement('input');
     inputField.type = 'text';
+    inputField.classList.add('currency'); // 콤마 처리를 위한 클래스 추가
     inputField.placeholder = '예: 10,000,000';
     inputField.style.marginBottom = "10px";
     previousGifts.appendChild(inputField);
