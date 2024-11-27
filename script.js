@@ -101,15 +101,16 @@ document.getElementById('addPreviousGift').addEventListener('click', function ()
     const newGiftEntry = document.createElement('div');
     newGiftEntry.className = 'gift-entry';
 
-    newGiftEntry.innerHTML = `
-        <label>과거 증여 금액:</label>
-        <input type="text" name="pastGiftAmount" placeholder="예: 10,000,000" required>
+   newGiftEntry.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <input type="text" name="pastGiftAmount" placeholder="금액: 예 10,000,000" required style="flex: 1;">
 
-        <label>과거 증여일:</label>
-        <input type="date" name="pastGiftDate" required>
+        <input type="date" name="pastGiftDate" required style="flex: 1;">
 
-        <button type="button" class="removeGiftButton">삭제</button>
-    `;
+        <button type="button" class="removeGiftButton" style="background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px;">삭제</button>
+    </div>
+`;
+
 
     // "삭제" 버튼 이벤트 추가
     newGiftEntry.querySelector('.removeGiftButton').addEventListener('click', function () {
