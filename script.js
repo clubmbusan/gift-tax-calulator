@@ -1,3 +1,7 @@
+function parseCurrency(value) {
+    return parseInt(value.replace(/,/g, ''), 10) || 0;
+}
+
 // 증여세 누진세 계산 로직
 const taxBrackets = [
     { limit: 100000000, rate: 10, deduction: 0 },
@@ -69,25 +73,29 @@ function calculateGiftTax(taxableAmount) {
 
 // 폼 제출 이벤트
 document.getElementById('taxForm').onsubmit = function (e) {
-    e.preventDefault();
+    e.preventDefault(); // 폼 기본 제출 동작 방지
 
     // 재산 유형별 금액 계산
     const selectedType = document.getElementById('assetType').value;
-    let giftAmount = parseCurrency(document.getElementById('cashAmount')?.value || '0');
+    let giftAmount = 0;
 
-    if (selectedType === 'realEstate') {
-        giftAmount = parseCurrency(document.getElementById('realEstateValue')?.value || '0');
+    if (selectedType === 'cash') {
+        const cashInput = document.getElementById('cashAmount');
+        giftAmount = parseCurrency(cashInput?.value || '0'); // 현금 입력값 처리
+    } else if (selectedType === 'realEstate') {
+        const realEstateInput = document.getElementById('realEstateValue');
+        giftAmount = parseCurrency(realEstateInput?.value || '0'); // 부동산 입력값 처리
     } else if (selectedType === 'stock') {
         const stockQuantity = parseInt(document.getElementById('stockQuantity')?.value || '0', 10);
         const stockPrice = parseCurrency(document.getElementById('stockPrice')?.value || '0');
-        giftAmount = stockQuantity * stockPrice;
+        giftAmount = stockQuantity * stockPrice; // 주식 입력값 계산
     }
 
-    // 과거 증여 금액 합산
-    const previousGiftTotal = calculatePreviousGifts();
+    // 과거 증여 내역 합산
+    const previousGiftTotal = calculatePreviousGifts(); // 과거 증여 내역 금액 합산
 
     // 공제 한도
-    const exemptionLimit = 50000000; // 기본 공제 한도 (사용자 선택 관계에 따라 동적으로 설정 가능)
+    const exemptionLimit = 50000000; // 기본 공제 한도
 
     // 과세 표준 및 증여세 계산
     const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
