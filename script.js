@@ -117,7 +117,7 @@ document.getElementById('addPreviousGift').addEventListener('click', function ()
     <button type="button" class="removeGiftButton" 
     style="background-color: #f44336; color: white; border: none; padding: 0 15px; cursor: pointer; 
     border-radius: 5px; height: 40px; line-height: 40px; text-align: center;">삭제</button>
-
+</div>
    
 `;
 
