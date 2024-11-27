@@ -108,21 +108,21 @@ document.getElementById('addPreviousGift').addEventListener('click', function ()
     const newGiftEntry = document.createElement('div');
     newGiftEntry.className = 'gift-entry';
 
-   newGiftEntry.innerHTML = `
+    newGiftEntry.innerHTML = `
     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-        <input type="text" name="pastGiftAmount" placeholder="금액: 예: 10,000,000" required style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 5px;">
+        <input type="text" name="pastGiftAmount" placeholder="금액: 예: 10,000,000" 
+            required style="flex: 2; padding: 5px; border: 1px solid #ddd; border-radius: 5px; height: 40px;">
 
-        <input type="date" name="pastGiftDate" required style="flex: 1;">
+        <input type="date" name="pastGiftDate" required 
+            style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 5px; height: 40px;">
 
-    <button type="button" class="removeGiftButton" 
-    style="background-color: #f44336; color: white; border: none; padding: 0 15px; cursor: pointer; 
-    border-radius: 5px; height: 40px; line-height: 40px; text-align: center;">삭제</button>
-</div>
-   
+        <button type="button" class="removeGiftButton" 
+            style="background-color: #f44336; color: white; border: none; padding: 0 10px; cursor: pointer; 
+            border-radius: 5px; height: 40px; line-height: 40px; text-align: center; flex: 0;">삭제</button>
+    </div>
 `;
 
-
-    // "삭제" 버튼 이벤트 추가
+      // "삭제" 버튼 이벤트 추가
     newGiftEntry.querySelector('.removeGiftButton').addEventListener('click', function () {
         container.removeChild(newGiftEntry);
     });
