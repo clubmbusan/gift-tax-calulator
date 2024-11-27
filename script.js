@@ -93,15 +93,33 @@ document.getElementById('assetType').addEventListener('change', function () {
     }
 });
 
-// 과거 증여 금액 추가
-document.getElementById('addGiftButton').addEventListener('click', function () {
-    const previousGifts = document.getElementById('previousGifts');
-    const inputField = document.createElement('input');
-    inputField.type = 'text';
-    inputField.placeholder = '예: 10,000,000';
-    inputField.style.marginBottom = "10px";
-    previousGifts.appendChild(inputField);
+// "과거 증여 내역 추가" 버튼 클릭 시 동적 필드 추가
+document.getElementById('addPreviousGift').addEventListener('click', function () {
+    const container = document.getElementById('previousGiftsContainer');
+
+    // 동적으로 추가할 새로운 증여 내역 필드
+    const newGiftEntry = document.createElement('div');
+    newGiftEntry.className = 'gift-entry';
+
+    newGiftEntry.innerHTML = `
+        <label>과거 증여 금액:</label>
+        <input type="text" name="pastGiftAmount" placeholder="예: 10,000,000" required>
+
+        <label>과거 증여일:</label>
+        <input type="date" name="pastGiftDate" required>
+
+        <button type="button" class="removeGiftButton">삭제</button>
+    `;
+
+    // "삭제" 버튼 이벤트 추가
+    newGiftEntry.querySelector('.removeGiftButton').addEventListener('click', function () {
+        container.removeChild(newGiftEntry);
+    });
+
+    // 새로운 필드를 컨테이너에 추가
+    container.appendChild(newGiftEntry);
 });
+
 
 // 결과 출력
 document.getElementById('taxForm').onsubmit = function (e) {
@@ -121,15 +139,22 @@ document.getElementById('taxForm').onsubmit = function (e) {
         giftAmount = stockQuantity * stockPrice;
     }
 
-    // 과거 증여 금액 합산
-    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
-    let previousGiftTotal = 0;
-    previousGiftInputs.forEach(input => {
-        const value = parseCurrency(input.value || '0');
-        if (!isNaN(value)) {
-            previousGiftTotal += value;
-        }
-    });
+    // 과거 증여 내역 합산 (금액 + 날짜)
+const previousGiftEntries = document.querySelectorAll('#previousGiftsContainer .gift-entry');
+let previousGiftTotal = 0;
+
+previousGiftEntries.forEach(entry => {
+    const giftAmount = parseCurrency(entry.querySelector('input[name="pastGiftAmount"]').value || '0');
+    const giftDate = entry.querySelector('input[name="pastGiftDate"]').value;
+
+    if (!isNaN(giftAmount)) {
+        previousGiftTotal += giftAmount;
+
+        // 날짜를 활용한 추가 계산 로직을 여기서 구현할 수 있음
+        console.log(`과거 증여 금액: ${giftAmount}, 증여일: ${giftDate}`);
+    }
+});
+
 
     const exemptionLimit = 50000000; // 기본 공제
     const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
