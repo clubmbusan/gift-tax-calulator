@@ -109,9 +109,14 @@ document.getElementById('taxForm').onsubmit = function (e) {
 // 재산 유형 변경 시 입력 필드 동적 생성
 document.getElementById('assetType').addEventListener('change', function () {
     const additionalFields = document.getElementById('additionalFields');
-    additionalFields.innerHTML = '';
+    additionalFields.innerHTML = ''; // 기존 필드 초기화
 
-    if (this.value === 'realEstate') {
+    if (this.value === 'cash') {
+        additionalFields.innerHTML = `
+            <label for="cashAmount">현금 금액 (원):</label>
+            <input type="text" id="cashAmount" placeholder="예: 10,000,000">
+        `;
+    } else if (this.value === 'realEstate') {
         additionalFields.innerHTML = `
             <label for="realEstateValue">부동산 공시가격 (원):</label>
             <input type="text" id="realEstateValue" placeholder="예: 500,000,000">
@@ -124,4 +129,4 @@ document.getElementById('assetType').addEventListener('change', function () {
             <input type="text" id="stockPrice" placeholder="예: 50,000">
         `;
     }
-};
+}); // 닫는 괄호를 정확히 추가!
