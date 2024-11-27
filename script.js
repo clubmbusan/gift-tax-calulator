@@ -7,18 +7,25 @@ const taxBrackets = [
     { limit: Infinity, rate: 50, deduction: 460000000 }
 ];
 
+
 // 금액 입력 시 콤마 처리
 function parseCurrency(value) {
     return parseInt(value.replace(/,/g, ''), 10) || 0;
 }
 
+// 모든 금액 입력 필드에 콤마 처리
 document.addEventListener('input', function (e) {
-    if (e.target.id === 'cashAmount' || e.target.id === 'realEstateValue' || e.target.id === 'stockPrice') {
+    if (e.target.id === 'cashAmount' || 
+        e.target.id === 'realEstateValue' || 
+        e.target.id === 'stockPrice' || 
+        e.target.name === 'pastGiftAmount') {
         e.target.value = e.target.value
             .replace(/[^0-9]/g, '') // 숫자 외 문자 제거
             .replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 콤마 추가
     }
 });
+
+
 
 // 가산세 계산 (수정된 함수)
 function calculateLatePenalty(submissionDate, giftDate, giftTax) {
