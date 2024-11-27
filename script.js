@@ -103,12 +103,12 @@ document.getElementById('addPreviousGift').addEventListener('click', function ()
 
    newGiftEntry.innerHTML = `
     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-        <input type="text" name="pastGiftAmount" placeholder="금액: 예 10,000,000" required style="flex: 1;">
+        <input type="text" name="pastGiftAmount" placeholder="금액: 예: 10,000,000" required style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 5px;">
 
         <input type="date" name="pastGiftDate" required style="flex: 1;">
 
-        <button type="button" class="removeGiftButton" style="background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px;">삭제</button>
-    </div>
+    <button type="button" class="removeGiftButton" style="background-color: #f44336; color: white; border: none; padding: 5px; cursor: pointer; border-radius: 5px; flex: 0;">삭제</button>
+   
 `;
 
 
