@@ -154,24 +154,31 @@ previousGiftEntries.forEach(entry => {
         console.log(`과거 증여 금액: ${giftAmount}, 증여일: ${giftDate}`);
     }
 });
+// 기본 공제 한도 설정
+const exemptionLimit = 50000000; // 기본 공제 한도
 
+// 과세 표준 계산
+const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
 
-    const exemptionLimit = 50000000; // 기본 공제
-    const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
+// 증여세 계산
+const giftTax = calculateGiftTax(taxableAmount);
 
-    // 증여세 계산
-    const giftTax = calculateGiftTax(taxableAmount);
+// 가산세 계산
+const giftDate = document.getElementById('giftDate')?.value;
+const submissionDate = document.getElementById('submissionDate')?.value;
+const latePenalty = calculateLatePenalty(submissionDate, giftDate, giftTax);
 
-    // 가산세 계산
-    const giftDate = document.getElementById('giftDate')?.value;
-    const submissionDate = document.getElementById('submissionDate')?.value;
-    const latePenalty = calculateLatePenalty(submissionDate, giftDate, giftTax);
+// 디버깅 로그 (중간값 확인)
+console.log(`과세 표준: ${taxableAmount}`);
+console.log(`증여세: ${giftTax}`);
+console.log(`가산세: ${latePenalty}`);
 
-    // 결과 표시
-    const resultDiv = document.getElementById('result');
-    resultDiv.innerHTML = `
-        <p><strong>증여세:</strong> ${giftTax.toLocaleString()}원</p>
-        <p><strong>가산세:</strong> ${latePenalty.toLocaleString()}원</p>
-        <p><strong>최종 납부세액:</strong> ${(giftTax + latePenalty).toLocaleString()}원</p>
-    `;
+// 결과 출력
+const resultDiv = document.getElementById('result');
+resultDiv.innerHTML = `
+    <p><strong>증여세:</strong> ${giftTax.toLocaleString()}원</p>
+    <p><strong>가산세:</strong> ${latePenalty.toLocaleString()}원</p>
+    <p><strong>최종 납부세액:</strong> ${(giftTax + latePenalty).toLocaleString()}원</p>
+`;
+    
 };
