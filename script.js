@@ -114,7 +114,10 @@ document.getElementById('addPreviousGift').addEventListener('click', function ()
 
         <input type="date" name="pastGiftDate" required style="flex: 1;">
 
-    <button type="button" class="removeGiftButton" style="background-color: #f44336; color: white; border: none; padding: 5px; cursor: pointer; border-radius: 5px; flex: 0;">삭제</button>
+    <button type="button" class="removeGiftButton" 
+    style="background-color: #f44336; color: white; border: none; padding: 0 15px; cursor: pointer; 
+    border-radius: 5px; height: 40px; line-height: 40px; text-align: center;">삭제</button>
+
    
 `;
 
