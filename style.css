@@ -37,18 +37,29 @@ form select {
 }
 
 /* 녹색 버튼 크기 조정 */
+/* 버튼 크기와 기본 스타일 */
 button#addGiftButton, button#button-calculate {
     width: 100%; /* 다른 입력창과 동일한 너비 */
     padding: 10px; /* 입력 필드와 동일한 여백 */
     margin-bottom: 15px; /* 아래 여백 추가 */
-    background-color: #28a745;
-    color: #fff;
     border: none;
     border-radius: 5px; /* 모서리 둥글게 */
     font-size: 14px; /* 입력 필드와 일치하는 텍스트 크기 */
     cursor: pointer;
     box-sizing: border-box; /* 크기 계산 통일 */
 }
+
+/* 녹색 버튼 스타일 */
+button {
+    background-color: #4CAF50; /* 기본 초록색 */
+    color: white; /* 텍스트 색상 */
+}
+
+/* 버튼 hover 시 스타일 */
+button:hover {
+    background-color: #45a049; /* hover 시 더 진한 초록색 */
+}
+
 
 button#addGiftButton:hover, button#button-calculate:hover {
     background-color: #218838; /* 호버 시 색상 변경 */
