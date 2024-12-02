@@ -159,15 +159,38 @@ document.getElementById('taxForm').onsubmit = function (e) {
         }
     });
 
-    const exemptionLimit = 50000000; // 기본 공제
-    const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
+    // 공제액 처리
+function getExemptionAmount(relationship) {
+    const exemptions = {
+        'adultChild': 50000000,   // 성년 자녀 공제 5천만 원
+        'minorChild': 20000000,   // 미성년 자녀 공제 2천만 원
+        'spouse': 60000000,       // 배우자 공제 6천만 원
+        'sonInLawDaughterInLaw': 50000000, // 사위/며느리 공제 5천만 원
+        'other': 1000000          // 타인 공제 1천만 원
+    };
 
+    // 기본 공제 5천만 원
+    const basicExemption = 50000000; // 기본 공제 5천만 원
+    
+    // 관계에 따른 공제액 반환
+    if (relationship === 'adultChild') {
+        return basicExemption;  // 성년 자녀에게는 5천만 원 공제
+    } else if (relationship === 'minorChild') {
+        return exemptions['minorChild'];  // 미성년 자녀에게는 2천만 원 공제
+    } else if (relationship === 'spouse') {
+        return exemptions['spouse'];  // 배우자에게는 6천만 원 공제
+    } else if (relationship === 'sonInLawDaughterInLaw') {
+        return exemptions['sonInLawDaughterInLaw'];  // 사위/며느리에게는 5천만 원 공제
+    } else if (relationship === 'other') {
+        return exemptions['other'];  // 타인에게는 1천만 원 공제
+    } else {
+        return 0;  // 기본 공제 외에 추가적인 공제가 없을 경우
+    }
+}
     // 증여세 계산
     const giftTax = calculateGiftTax(taxableAmount);
 
-    // 가산세
-
-
+    
     // 가산세 계산
     const giftDate = document.getElementById('giftDate')?.value;
     const submissionDate = document.getElementById('submissionDate')?.value;
