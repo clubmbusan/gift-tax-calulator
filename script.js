@@ -159,7 +159,7 @@ document.getElementById('taxForm').onsubmit = function (e) {
         }
     });
 
-    // 공제액 처리
+   // 공제액 처리
 function getExemptionAmount(relationship) {
     const exemptions = {
         'adultChild': 50000000,   // 성년 자녀 공제 5천만 원
@@ -187,11 +187,87 @@ function getExemptionAmount(relationship) {
         return 0;  // 기본 공제 외에 추가적인 공제가 없을 경우
     }
 }
-    // 증여세 계산
-    const giftTax = calculateGiftTax(taxableAmount);
 
-    
-    // 가산세 계산
+// 증여세 계산
+function calculateGiftTax(taxableAmount) {
+    let tax = 0;
+
+    // 기본 세율 예시 (실제 세율에 맞게 수정 필요)
+    if (taxableAmount <= 10000000) {
+        tax = taxableAmount * 0.1; // 10%
+    } else if (taxableAmount <= 50000000) {
+        tax = taxableAmount * 0.2; // 20%
+    } else {
+        tax = taxableAmount * 0.3; // 30%
+    }
+
+    return tax;
+}
+
+// 지연된 신고 및 납부에 대한 가산세 계산
+function calculateLatePenalty(submissionDate, giftDate, giftTax) {
+    const date1 = new Date(giftDate);
+    const date2 = new Date(submissionDate);
+    const diffInDays = Math.floor((date2 - date1) / (1000 * 60 * 60 * 24)); // 날짜 차이 계산
+
+    // 1개월 이내: 5%, 1개월 이상: 10% 가산세
+    let penaltyRate = 0;
+    if (diffInDays <= 30) {
+        penaltyRate = 0.05; // 5%
+    } else if (diffInDays > 30) {
+        penaltyRate = 0.1; // 10%
+    }
+
+    return giftTax * penaltyRate; // 가산세 계산
+}
+
+// 금액 문자열을 숫자로 변환 (예: 1,000,000 => 1000000)
+function parseCurrency(currencyString) {
+    return parseInt(currencyString.replace(/[^0-9]/g, ''), 10) || 0;
+}
+
+// 전체 계산
+document.getElementById('taxForm').onsubmit = function (e) {
+    e.preventDefault();
+
+    // 관계 선택 (성년 자녀, 미성년 자녀, 배우자, 사위/며느리, 타인)
+    const relationship = document.getElementById('relationship').value;  // 관계 정보를 입력받기
+
+    // 재산 유형에 따른 금액 계산
+    const selectedType = document.getElementById('assetType').value;
+    let giftAmount = 0;
+
+    // 재산 유형에 따른 증여금액 계산
+    if (selectedType === 'cash') {
+        giftAmount = parseCurrency(document.getElementById('cashAmount')?.value || '0');
+    } else if (selectedType === 'realEstate') {
+        giftAmount = parseCurrency(document.getElementById('realEstateValue')?.value || '0');
+    } else if (selectedType === 'stock') {
+        const stockQuantity = parseInt(document.getElementById('stockQuantity')?.value || '0', 10);
+        const stockPrice = parseCurrency(document.getElementById('stockPrice')?.value || '0');
+        giftAmount = stockQuantity * stockPrice;
+    }
+
+    // 공제액 계산 (관계에 따른 공제액 적용)
+    const exemptionLimit = getExemptionAmount(relationship); // 관계에 따른 공제액 적용
+
+    // 과거 증여 금액 합산
+    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
+    let previousGiftTotal = 0;
+    previousGiftInputs.forEach(input => {
+        const value = parseCurrency(input.value || '0');
+        if (!isNaN(value)) {
+            previousGiftTotal += value;
+        }
+    });
+
+    // 과세표준 계산
+    const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0); // 공제 후 과세표준 계산
+
+    // 증여세 계산
+    const giftTax = calculateGiftTax(taxableAmount); // 증여세 계산 함수
+
+    // 가산세 계산 (지연된 신고 및 납부)
     const giftDate = document.getElementById('giftDate')?.value;
     const submissionDate = document.getElementById('submissionDate')?.value;
     const latePenalty = calculateLatePenalty(submissionDate, giftDate, giftTax);
