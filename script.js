@@ -1,35 +1,11 @@
 // 증여세 누진세 계산 로직
 const taxBrackets = [
-    { limit: 10000000, rate: 10, deduction: 0 },         // 1,000만 원 이하
-    { limit: 50000000, rate: 20, deduction: 1000000 },    // 1,000만 원 초과 ~ 5,000만 원 이하
-    { limit: 100000000, rate: 30, deduction: 6000000 },   // 5,000만 원 초과 ~ 1억 원 이하
-    { limit: 300000000, rate: 40, deduction: 16000000 },  // 1억 원 초과 ~ 3억 원 이하
-    { limit: Infinity, rate: 50, deduction: 46000000 }    // 3억 원 초과
+    { limit: 100000000, rate: 10, deduction: 0 },
+    { limit: 500000000, rate: 20, deduction: 10000000 },
+    { limit: 1000000000, rate: 30, deduction: 60000000 },
+    { limit: 3000000000, rate: 40, deduction: 160000000 },
+    { limit: Infinity, rate: 50, deduction: 460000000 }
 ];
-
-// 증여세 계산 함수
-function calculateGiftTax(taxableAmount) {
-    let tax = 0;
-    let previousLimit = 0; // 이전 구간의 한도 초기화
-
-    // 각 구간별로 누진세 적용
-    for (let i = 0; i < taxBrackets.length; i++) {
-        const bracket = taxBrackets[i];
-        
-        if (taxableAmount > bracket.limit) {
-            // 세율 구간 내의 금액만큼 세액을 계산
-            tax += (bracket.limit - previousLimit) * (bracket.rate / 100);
-            previousLimit = bracket.limit;
-        } else {
-            // 마지막 구간 처리
-            tax += (taxableAmount - previousLimit) * (bracket.rate / 100);
-            tax -= bracket.deduction;  // 공제액 차감
-            break;
-        }
-    }
-    return Math.max(tax, 0);  // 0 이하로 떨어지지 않도록 처리
-}
-
 
 // 금액 입력 시 콤마 처리
 function parseCurrency(value) {
@@ -72,10 +48,6 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
 
     return giftTax * 0.2; // 6개월 초과: 가산세 20%
 }
-// 공제액 계산 후 과세표준 금액 구하기
-const exemptionLimit = 50000000; // 기본 공제액 50,000,000원
-const previousGiftTotal = 0; // 이전 증여 합계 (실제로는 입력받은 값을 사용)
-const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0); // 과세표준 금액
 
 // 증여세 계산 로직
 function calculateGiftTax(taxableAmount) {
