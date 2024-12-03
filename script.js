@@ -51,7 +51,7 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
     return giftTax * 0.2; // 6개월 초과: 가산세 20%
 }
 
-// 관계에 따른 공제액 반환
+// 공제액 처리
 function getExemptionAmount(relationship) {
     const exemptions = {
         'adultChild': 50000000,   // 성년 자녀 공제 5천만 원
@@ -60,6 +60,7 @@ function getExemptionAmount(relationship) {
         'sonInLawDaughterInLaw': 50000000, // 사위/며느리 공제 5천만 원
         'other': 1000000          // 타인 공제 1천만 원
     };
+
     return exemptions[relationship] || 0;  // 기본값 0
 }
 
@@ -165,18 +166,18 @@ document.getElementById('taxForm').onsubmit = function (e) {
         const stockPrice = parseCurrency(document.getElementById('stockPrice')?.value || '0');
         giftAmount = stockQuantity * stockPrice;
     }
+   
+// 과거 증여 금액 합산
+const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
+let previousGiftTotal = 0;
+previousGiftInputs.forEach(input => {
+    const value = parseCurrency(input.value || '0');
+    if (!isNaN(value)) {
+        previousGiftTotal += value;
+    }
+});
 
-    // 과거 증여 금액 합산
-    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
-    let previousGiftTotal = 0;
-    previousGiftInputs.forEach(input => {
-        const value = parseCurrency(input.value || '0');
-        if (!isNaN(value)) {
-            previousGiftTotal += value;
-        }
-    });
-
-    // 공제액 처리
+// 공제액 처리
 function getExemptionAmount(relationship) {
     const exemptions = {
         'adultChild': 50000000,   // 성년 자녀 공제 5천만 원
@@ -265,7 +266,7 @@ document.getElementById('taxForm').onsubmit = function (e) {
 
     // 관계 선택 (성년 자녀, 미성년 자녀, 배우자, 사위/며느리, 타인)
     const relationship = document.getElementById('relationship').value;  // 관계 정보를 입력받기
-
+    
     // 재산 유형에 따른 금액 계산
     const selectedType = document.getElementById('assetType').value;
     let giftAmount = 0;
@@ -283,16 +284,6 @@ document.getElementById('taxForm').onsubmit = function (e) {
 
     // 공제액 계산 (관계에 따른 공제액 적용)
     const exemptionLimit = getExemptionAmount(relationship); // 관계에 따른 공제액 적용
-
-    // 과거 증여 금액 합산
-    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
-    let previousGiftTotal = 0;
-    previousGiftInputs.forEach(input => {
-        const value = parseCurrency(input.value || '0');
-        if (!isNaN(value)) {
-            previousGiftTotal += value;
-        }
-    });
 
     // 과세표준 계산
     const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0); // 공제 후 과세표준 계산
