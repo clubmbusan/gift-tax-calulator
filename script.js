@@ -26,7 +26,20 @@ document.addEventListener('input', function (e) {
             .replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 콤마 추가
     }
 });
+// 관계 선택에 따른 공제 한도 결정
+const relationship = document.getElementById('relationship').value;
+console.log('선택된 관계:', relationship); // 관계 값 확인
 
+const exemptionLimit = exemptionLimits[relationship] || 0;
+console.log('적용된 공제 한도:', exemptionLimit); // 공제 한도 확인
+
+// 과세 표준 계산
+const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
+console.log('과세 표준:', taxableAmount); // 과세 표준 확인
+
+// 증여세 계산
+const giftTax = calculateGiftTax(taxableAmount);
+console.log('계산된 증여세:', giftTax); // 계산된 증여세 확인
 // 가산세 계산 (수정된 함수)
 function calculateLatePenalty(submissionDate, giftDate, giftTax) {
     const giftDateObj = new Date(giftDate);
