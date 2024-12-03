@@ -121,25 +121,28 @@ document.getElementById('taxForm').onsubmit = function (e) {
     const selectedType = document.getElementById('assetType').value; // 재산 유형 선택
     const relationship = document.getElementById('relationship').value; // 증여 관계
     let giftAmount = 0;
-// 재산 유형 선택 시 입력 필드 변경
+
+    // 재산 유형 선택 시 입력 필드 변경
 document.getElementById('assetType').addEventListener('change', function (e) {
     const selectedType = e.target.value; // 선택된 재산 유형
-    const cashField = document.getElementById('cashAmount'); // 현금 입력 필드
-    const stockFields = document.getElementById('stockInputFields'); // 주식 입력 필드 그룹
-    const realEstateField = document.getElementById('realEstateValue'); // 부동산 입력 필드
 
-    // 모든 입력 필드 초기화
-    cashField.parentElement.style.display = 'none'; // 현금 필드 숨김
-    stockFields.style.display = 'none'; // 주식 필드 숨김
-    realEstateField.parentElement.style.display = 'none'; // 부동산 필드 숨김
+    // 각 입력 필드를 명확히 참조
+    const cashField = document.getElementById('cashInputField'); // 현금 입력 필드 그룹
+    const realEstateField = document.getElementById('realEstateInputField'); // 부동산 입력 필드 그룹
+    const stockField = document.getElementById('stockInputField'); // 주식 입력 필드 그룹
 
-    // 선택된 유형에 따라 필드 표시
+    // 모든 입력 필드를 초기화 (숨김 처리)
+    cashField.style.display = 'none';
+    realEstateField.style.display = 'none';
+    stockField.style.display = 'none';
+
+    // 선택된 유형에 따라 해당 입력 필드 표시
     if (selectedType === 'cash') {
-        cashField.parentElement.style.display = 'block'; // 현금 입력 필드 표시
-    } else if (selectedType === 'stock') {
-        stockFields.style.display = 'block'; // 주식 입력 필드 표시
+        cashField.style.display = 'block';
     } else if (selectedType === 'realEstate') {
-        realEstateField.parentElement.style.display = 'block'; // 부동산 입력 필드 표시
+        realEstateField.style.display = 'block';
+    } else if (selectedType === 'stock') {
+        stockField.style.display = 'block';
     }
 });
 
