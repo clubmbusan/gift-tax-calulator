@@ -159,7 +159,7 @@ document.getElementById('taxForm').onsubmit = function (e) {
         }
     });
 
-   // 공제액 처리
+ // 공제액 처리
 function getExemptionAmount(relationship) {
     const exemptions = {
         'adultChild': 50000000,   // 성년 자녀 공제 5천만 원
@@ -187,22 +187,38 @@ function getExemptionAmount(relationship) {
         return 0;  // 기본 공제 외에 추가적인 공제가 없을 경우
     }
 }
-
-// 증여세 계산
+// 증여세 계산 (누진세율 적용)
 function calculateGiftTax(taxableAmount) {
     let tax = 0;
+    let previousLimit = 0; // 이전 구간의 한도를 초기화
 
-    // 기본 세율 예시 (실제 세율에 맞게 수정 필요)
-    if (taxableAmount <= 10000000) {
-        tax = taxableAmount * 0.1; // 10%
-    } else if (taxableAmount <= 50000000) {
-        tax = taxableAmount * 0.2; // 20%
-    } else {
-        tax = taxableAmount * 0.3; // 30%
+    // 누진세율 구간
+    const taxBrackets = [
+        { limit: 10000000, rate: 0.1 },    // 1천만 원 이하 10%
+        { limit: 100000000, rate: 0.2 },   // 1억 원 이하 20%
+        { limit: 500000000, rate: 0.3 },   // 5억 원 이하 30%
+        { limit: 1000000000, rate: 0.4 },  // 10억 원 이하 40%
+        { limit: 3000000000, rate: 0.5 },  // 30억 원 이하 50%
+        { limit: Infinity, rate: 0.6 },    // 30억 원 초과 60%
+    ];
+
+    // 누진세율을 각 구간에 맞게 계산
+    for (let i = 0; i < taxBrackets.length; i++) {
+        const bracket = taxBrackets[i];
+
+        // 현재 구간의 금액이 해당 구간의 한도를 초과하면 초과 부분에 대해 세금 계산
+        if (taxableAmount > bracket.limit) {
+            tax += (bracket.limit - previousLimit) * bracket.rate;  // 해당 구간 금액에 세율 적용
+            previousLimit = bracket.limit; // 이전 구간 한도 갱신
+        } else {
+            tax += (taxableAmount - previousLimit) * bracket.rate; // 마지막 구간의 금액에 세율 적용
+            break;
+        }
     }
 
-    return tax;
+    return Math.max(tax, 0); // 세금이 음수로 나오지 않도록 0 이상으로 처리
 }
+
 
 // 지연된 신고 및 납부에 대한 가산세 계산
 function calculateLatePenalty(submissionDate, giftDate, giftTax) {
