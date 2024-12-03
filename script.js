@@ -176,7 +176,7 @@ document.getElementById('taxForm').onsubmit = function (e) {
         }
     });
 
- // 공제액 처리
+    // 공제액 처리
 function getExemptionAmount(relationship) {
     const exemptions = {
         'adultChild': 50000000,   // 성년 자녀 공제 5천만 원
@@ -204,6 +204,7 @@ function getExemptionAmount(relationship) {
         return 0;  // 기본 공제 외에 추가적인 공제가 없을 경우
     }
 }
+
 // 증여세 계산 (누진세율 적용)
 function calculateGiftTax(taxableAmount) {
     let tax = 0;
@@ -235,7 +236,6 @@ function calculateGiftTax(taxableAmount) {
 
     return Math.max(tax, 0); // 세금이 음수로 나오지 않도록 0 이상으로 처리
 }
-
 
 // 지연된 신고 및 납부에 대한 가산세 계산
 function calculateLatePenalty(submissionDate, giftDate, giftTax) {
