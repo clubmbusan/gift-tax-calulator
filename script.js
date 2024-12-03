@@ -122,7 +122,7 @@ document.getElementById('taxForm').onsubmit = function (e) {
     const relationship = document.getElementById('relationship').value; // 증여 관계
     let giftAmount = 0;
 
-    // 재산 유형에 따른 금액 계산
+  // 재산 유형에 따른 금액 계산
 if (selectedType === 'cash') {
     // 현금 유형: 사용자가 입력한 현금 금액
     giftAmount = parseCurrency(document.getElementById('cashAmount')?.value || '0');
