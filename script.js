@@ -1,4 +1,5 @@
 // 증여세 누진세 계산 로직
+// 각 증여 금액 구간에 따른 세율 및 공제액을 정의합니다.
 const taxBrackets = [
     { limit: 10000000, rate: 10, deduction: 0 },          // 1천만 원 이하 10%
     { limit: 100000000, rate: 20, deduction: 10000000 },  // 1억 원 이하 20%
@@ -9,6 +10,7 @@ const taxBrackets = [
 ];
 
 // 금액 입력 시 콤마 처리
+// 사용자가 금액을 입력할 때, 자동으로 콤마를 추가합니다.
 document.addEventListener('input', function (e) {
     if (['cashAmount', 'realEstateValue', 'stockPrice', 'amount'].includes(e.target.id)) {
         e.target.value = e.target.value
@@ -18,6 +20,7 @@ document.addEventListener('input', function (e) {
 });
 
 // 관계별 공제 한도 계산
+// 증여 관계에 따라 공제 한도를 설정합니다.
 function getExemptionAmount(relationship) {
     const exemptions = {
         'adultChild': 50000000,       // 성년 자녀 공제: 5천만 원
@@ -26,10 +29,11 @@ function getExemptionAmount(relationship) {
         'sonInLawDaughterInLaw': 50000000, // 사위/며느리 공제: 5천만 원
         'other': 1000000              // 타인 공제: 1천만 원
     };
-    return exemptions[relationship] || 0;
+    return exemptions[relationship] || 0; // 관계가 정의되지 않으면 기본값 0 반환
 }
 
 // 증여세 계산 로직
+// 누진세율에 따라 증여세를 계산합니다.
 function calculateGiftTax(taxableAmount) {
     let tax = 0;
     let previousLimit = 0;
@@ -46,10 +50,11 @@ function calculateGiftTax(taxableAmount) {
             break;
         }
     }
-    return Math.max(tax, 0);
+    return Math.max(tax, 0); // 세금이 음수로 나오지 않도록 처리
 }
 
 // 가산세 계산 로직
+// 신고 기한을 초과한 경우, 가산세를 계산합니다.
 function calculateLatePenalty(submissionDate, giftDate, giftTax) {
     const giftDateObj = new Date(giftDate);
     const submissionDateObj = new Date(submissionDate);
@@ -76,6 +81,7 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
 }
 
 // 과거 증여 금액 추가 버튼
+// 사용자가 버튼을 클릭하면 금액 및 날짜 입력 필드가 생성됩니다.
 document.getElementById('addGiftButton').addEventListener('click', function () {
     const container = document.getElementById('previousGifts');
     const newGiftEntry = document.createElement('div');
@@ -101,48 +107,61 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
 
     container.appendChild(newGiftEntry);
 });
-// 지연 신고 및 납부 가산세 계산
+// 가산세 계산 로직
 function calculateLatePenalty(submissionDate, giftDate, giftTax) {
-    const date1 = new Date(giftDate);
-    const date2 = new Date(submissionDate);
-    const diffInDays = Math.floor((date2 - date1) / (1000 * 60 * 60 * 24));
+    const giftDateObj = new Date(giftDate);
+    const submissionDateObj = new Date(submissionDate);
 
-    let penaltyRate = 0;
-    let message = "기한 내 신고";
-    if (diffInDays > 30 && diffInDays <= 90) {
-        penaltyRate = 0.05;
-        message = "신고 기한 30일 초과";
-    } else if (diffInDays > 90) {
-        penaltyRate = 0.1;
-        message = "신고 기한 90일 초과";
+    // 날짜가 올바르지 않을 경우 처리
+    if (!giftDate || !submissionDate || isNaN(giftDateObj) || isNaN(submissionDateObj)) {
+        return { penalty: 0, message: "날짜가 잘못 입력되었습니다." };
     }
 
-    const penalty = giftTax * penaltyRate;
-    console.log("Late Penalty:", penalty);
-    return { penalty, message };
+    // 신고 기한 계산 (증여일 + 3개월)
+    const dueDate = new Date(giftDateObj);
+    dueDate.setMonth(dueDate.getMonth() + 3);
+
+    // 신고 기한 초과 여부에 따른 가산세 계산
+    if (submissionDateObj <= dueDate) {
+        return { penalty: 0, message: "신고 기한 내 신고 완료" };
+    }
+
+    // 연장된 신고 기한 (증여일 + 6개월)
+    const extendedDueDate = new Date(giftDateObj);
+    extendedDueDate.setMonth(extendedDueDate.getMonth() + 6);
+
+    if (submissionDateObj <= extendedDueDate) {
+        return { penalty: giftTax * 0.1, message: "신고 기한 초과 (3~6개월)" };
+    }
+
+    return { penalty: giftTax * 0.2, message: "신고 기한 초과 (6개월 초과)" };
 }
+
 // 계산 및 결과 표시
+// 사용자 입력 데이터를 바탕으로 최종 결과를 계산하고 표시합니다.
 document.getElementById('taxForm').onsubmit = function (e) {
     e.preventDefault();
 
-    const selectedType = document.getElementById('assetType').value;
-    const relationship = document.getElementById('relationship').value;
+    const selectedType = document.getElementById('assetType').value; // 재산 유형 선택
+    const relationship = document.getElementById('relationship').value; // 증여 관계
     let giftAmount = 0;
 
+    // 재산 유형에 따른 금액 계산
     if (selectedType === 'cash') {
         giftAmount = parseInt(document.getElementById('cashAmount').value.replace(/,/g, ''), 10) || 0;
     } else if (selectedType === 'realEstate') {
         giftAmount = parseInt(document.getElementById('realEstateValue').value.replace(/,/g, ''), 10) || 0;
     } else if (selectedType === 'stock') {
-        const stockQuantity = parseInt(document.getElementById('stockQuantity')?.value || '0', 10);
+        const stockQuantity = parseInt(document.getElementById('stockQuantity').value || '0', 10);
         const stockPrice = parseInt(document.getElementById('stockPrice').value.replace(/,/g, ''), 10) || 0;
         giftAmount = stockQuantity * stockPrice;
     }
 
-    const exemptionLimit = getExemptionAmount(relationship);
+    const exemptionLimit = getExemptionAmount(relationship); // 관계별 공제 한도 계산
     const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
     let previousGiftTotal = 0;
 
+    // 과거 증여 금액 합산
     previousGiftInputs.forEach(input => {
         const value = parseInt(input.value.replace(/,/g, ''), 10) || 0;
         if (!isNaN(value)) {
