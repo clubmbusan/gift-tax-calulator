@@ -1,17 +1,19 @@
 // 증여세 누진세 계산 로직
 const taxBrackets = [
-    { limit: 100000000, rate: 10, deduction: 0 },
-    { limit: 500000000, rate: 20, deduction: 10000000 },
-    { limit: 1000000000, rate: 30, deduction: 60000000 },
-    { limit: 3000000000, rate: 40, deduction: 160000000 },
-    { limit: Infinity, rate: 50, deduction: 460000000 }
+    { limit: 10000000, rate: 0.1 },    // 1천만 원 이하 10%
+    { limit: 100000000, rate: 0.2 },   // 1억 원 이하 20%
+    { limit: 500000000, rate: 0.3 },   // 5억 원 이하 30%
+    { limit: 1000000000, rate: 0.4 },  // 10억 원 이하 40%
+    { limit: 3000000000, rate: 0.5 },  // 30억 원 이하 50%
+    { limit: Infinity, rate: 0.6 },    // 30억 원 초과 60%
 ];
 
-// 금액 입력 시 콤마 처리
+// 금액 문자열을 숫자로 변환 (콤마 처리)
 function parseCurrency(value) {
     return parseInt(value.replace(/,/g, ''), 10) || 0;
 }
 
+// 금액 입력 시 콤마 추가
 document.addEventListener('input', function (e) {
     if (e.target.id === 'cashAmount' || e.target.id === 'realEstateValue' || e.target.id === 'stockPrice') {
         e.target.value = e.target.value
@@ -49,7 +51,19 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
     return giftTax * 0.2; // 6개월 초과: 가산세 20%
 }
 
-// 증여세 계산 로직
+// 관계에 따른 공제액 반환
+function getExemptionAmount(relationship) {
+    const exemptions = {
+        'adultChild': 50000000,   // 성년 자녀 공제 5천만 원
+        'minorChild': 20000000,   // 미성년 자녀 공제 2천만 원
+        'spouse': 60000000,       // 배우자 공제 6천만 원
+        'sonInLawDaughterInLaw': 50000000, // 사위/며느리 공제 5천만 원
+        'other': 1000000          // 타인 공제 1천만 원
+    };
+    return exemptions[relationship] || 0;  // 기본값 0
+}
+
+// 증여세 계산 (누진세율 적용)
 function calculateGiftTax(taxableAmount) {
     let tax = 0;
     let previousLimit = 0; // 이전 구간의 한도를 초기화
@@ -60,13 +74,14 @@ function calculateGiftTax(taxableAmount) {
 
         // 현재 구간의 금액이 해당 구간의 한도를 초과하면 초과 부분에 대해 세금 계산
         if (taxableAmount > bracket.limit) {
-            tax += (bracket.limit - previousLimit) * (bracket.rate / 100); // 한 구간 내 금액에 대해 세금 적용
-            previousLimit = bracket.limit; // 이전 한도 갱신
+            tax += (bracket.limit - previousLimit) * bracket.rate;  // 해당 구간 금액에 세율 적용
+            previousLimit = bracket.limit; // 이전 구간 한도 갱신
         } else {
-            tax += (taxableAmount - previousLimit) * (bracket.rate / 100); // 마지막 구간의 나머지 금액에 대해 세금 적용
+            tax += (taxableAmount - previousLimit) * bracket.rate; // 마지막 구간의 금액에 세율 적용
             break;
         }
     }
+
     return Math.max(tax, 0); // 세금이 음수로 나오지 않도록 0 이상으로 처리
 }
 
@@ -130,11 +145,13 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
     container.appendChild(newGiftEntry); // 컨테이너에 입력 필드 추가
 });
 
-
 // 결과 출력
 document.getElementById('taxForm').onsubmit = function (e) {
     e.preventDefault();
 
+    // 관계 선택 (성년 자녀, 미성년 자녀, 배우자, 사위/며느리, 타인)
+    const relationship = document.getElementById('relationship').value;  // 관계 정보를 입력받기
+    
     // 재산 유형에 따른 금액 계산
     const selectedType = document.getElementById('assetType').value;
     let giftAmount = 0;
