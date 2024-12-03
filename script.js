@@ -6,7 +6,14 @@ const taxBrackets = [
     { limit: 3000000000, rate: 40, deduction: 160000000 },
     { limit: Infinity, rate: 50, deduction: 460000000 }
 ];
-
+// 관계별 공제 한도 정의
+const exemptionLimits = {
+    adult: 50000000,         // 기본 성년자 공제
+    minor: 20000000,         // 미성년자 공제
+    spouse: 600000000,       // 배우자 공제
+    sonInLaw: 50000000,      // 사위, 며느리 공제
+    others: 10000000         // 기타 타인 공제
+};
 // 금액 입력 시 콤마 처리
 function parseCurrency(value) {
     return parseInt(value.replace(/,/g, ''), 10) || 0;
