@@ -107,35 +107,6 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
 
     container.appendChild(newGiftEntry);
 });
-// 가산세 계산 로직
-function calculateLatePenalty(submissionDate, giftDate, giftTax) {
-    const giftDateObj = new Date(giftDate);
-    const submissionDateObj = new Date(submissionDate);
-
-    // 날짜가 올바르지 않을 경우 처리
-    if (!giftDate || !submissionDate || isNaN(giftDateObj) || isNaN(submissionDateObj)) {
-        return { penalty: 0, message: "날짜가 잘못 입력되었습니다." };
-    }
-
-    // 신고 기한 계산 (증여일 + 3개월)
-    const dueDate = new Date(giftDateObj);
-    dueDate.setMonth(dueDate.getMonth() + 3);
-
-    // 신고 기한 초과 여부에 따른 가산세 계산
-    if (submissionDateObj <= dueDate) {
-        return { penalty: 0, message: "신고 기한 내 신고 완료" };
-    }
-
-    // 연장된 신고 기한 (증여일 + 6개월)
-    const extendedDueDate = new Date(giftDateObj);
-    extendedDueDate.setMonth(extendedDueDate.getMonth() + 6);
-
-    if (submissionDateObj <= extendedDueDate) {
-        return { penalty: giftTax * 0.1, message: "신고 기한 초과 (3~6개월)" };
-    }
-
-    return { penalty: giftTax * 0.2, message: "신고 기한 초과 (6개월 초과)" };
-}
 
 // 계산 및 결과 표시
 // 사용자 입력 데이터를 바탕으로 최종 결과를 계산하고 표시합니다.
