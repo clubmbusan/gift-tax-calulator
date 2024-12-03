@@ -145,7 +145,7 @@ document.getElementById('taxForm').onsubmit = function (e) {
     // 재산 유형에 따른 금액 계산
     const selectedType = document.getElementById('assetType').value;
     let giftAmount = 0;
-
+// 선택된 재산 유형에 따라 증여 금액 계산
     if (selectedType === 'cash') {
         giftAmount = parseCurrency(document.getElementById('cashAmount')?.value || '0');
     } else if (selectedType === 'realEstate') {
@@ -157,24 +157,35 @@ document.getElementById('taxForm').onsubmit = function (e) {
     }
 
     // 과거 증여 금액 합산
-    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
-    let previousGiftTotal = 0;
-    previousGiftInputs.forEach(input => {
-        const value = parseCurrency(input.value || '0');
-        if (!isNaN(value)) {
-            previousGiftTotal += value;
-        }
-    });
+const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
+let previousGiftTotal = 0;
+previousGiftInputs.forEach(input => {
+    const value = parseCurrency(input.value || '0');
+    if (!isNaN(value)) {
+        previousGiftTotal += value;
+    }
+});
 
-    const exemptionLimit = 50000000; // 기본 공제
-    const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
+// 관계별 공제 한도 정의
+const exemptionLimits = {
+    child: 50000000,        // 성년 자녀
+    minorChild: 20000000,   // 미성년 자녀
+    spouse: 600000000,      // 배우자
+    inLaw: 50000000,        // 사위/며느리
+    other: 10000000         // 기타 타인
+};
 
-    // 증여세 계산
-    const giftTax = calculateGiftTax(taxableAmount);
+// 관계 선택에 따른 공제 한도 결정
+const relationship = document.getElementById('relationship').value;
+const exemptionLimit = exemptionLimits[relationship] || 0; // 관계에 따른 공제 한도 적용
 
-    // 가산세
+// 과세 표준 계산
+const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
 
+// 증여세 계산
+const giftTax = calculateGiftTax(taxableAmount);
 
+   
     // 가산세 계산
     const giftDate = document.getElementById('giftDate')?.value;
     const submissionDate = document.getElementById('submissionDate')?.value;
