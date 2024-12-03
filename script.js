@@ -10,7 +10,7 @@ const taxBrackets = [
 ];
 
 // 금액 입력 시 콤마 처리
-// 사용자가 금액을 입력할 때, 자동으로 콤마를 추가합니다.
+// 사용자가 금액을 입력할 때 자동으로 콤마를 추가합니다.
 document.addEventListener('input', function (e) {
     if (['cashAmount', 'realEstateValue', 'stockPrice', 'amount'].includes(e.target.id)) {
         e.target.value = e.target.value
@@ -54,22 +54,26 @@ function calculateGiftTax(taxableAmount) {
 }
 
 // 가산세 계산 로직
-// 신고 기한을 초과한 경우, 가산세를 계산합니다.
+// 신고 기한을 초과한 경우 가산세를 계산합니다.
 function calculateLatePenalty(submissionDate, giftDate, giftTax) {
     const giftDateObj = new Date(giftDate);
     const submissionDateObj = new Date(submissionDate);
 
+    // 날짜가 올바르지 않을 경우 처리
     if (!giftDate || !submissionDate || isNaN(giftDateObj) || isNaN(submissionDateObj)) {
         return { penalty: 0, message: "날짜가 잘못 입력되었습니다." };
     }
 
+    // 신고 기한 계산 (증여일 + 3개월)
     const dueDate = new Date(giftDateObj);
-    dueDate.setMonth(dueDate.getMonth() + 3); // 신고 기한: 증여일 + 3개월
+    dueDate.setMonth(dueDate.getMonth() + 3);
 
+    // 신고 기한 초과 여부에 따른 가산세 계산
     if (submissionDateObj <= dueDate) {
         return { penalty: 0, message: "신고 기한 내 신고 완료" };
     }
 
+    // 연장된 신고 기한 (증여일 + 6개월)
     const extendedDueDate = new Date(giftDateObj);
     extendedDueDate.setMonth(extendedDueDate.getMonth() + 6);
 
@@ -94,6 +98,7 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
         </div>
     `;
 
+    // 삭제 버튼 동작 추가
     newGiftEntry.querySelector('.removeGiftButton').addEventListener('click', function () {
         container.removeChild(newGiftEntry);
     });
