@@ -30,8 +30,10 @@ document.addEventListener('input', function (e) {
 const relationship = document.getElementById('relationship').value;
 console.log('선택된 관계:', relationship); // 관계 값 확인
 
-const exemptionLimit = exemptionLimits[relationship] || 0;
-console.log('적용된 공제 한도:', exemptionLimit); // 공제 한도 확인
+console.log('Gift Amount:', giftAmount); // 증여 금액 확인
+console.log('Exemption Limit:', exemptionLimit); // 공제 한도 확인
+console.log('Taxable Amount:', taxableAmount); // 과세 표준 확인
+console.log('Gift Tax:', giftTax); // 증여세 확인
 
 // 과세 표준 계산
 const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
