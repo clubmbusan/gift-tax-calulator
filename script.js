@@ -28,15 +28,7 @@ function getExemptionAmount(relationship) {
     };
     return exemptions[relationship] || 0;
 }
-// 누진세율 구간 정의
-const taxBrackets = [
-    { limit: 10000000, rate: 10, deduction: 0 },
-    { limit: 100000000, rate: 20, deduction: 1000000 },
-    { limit: 500000000, rate: 30, deduction: 6000000 },
-    { limit: 1000000000, rate: 40, deduction: 16000000 },
-    { limit: 3000000000, rate: 50, deduction: 46000000 },
-    { limit: Infinity, rate: 60, deduction: 66000000 },
-];
+
 // 증여세 계산 로직
 function calculateGiftTax(taxableAmount) {
     let tax = 0;
