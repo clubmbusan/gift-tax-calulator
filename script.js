@@ -28,7 +28,15 @@ function getExemptionAmount(relationship) {
     };
     return exemptions[relationship] || 0;
 }
-
+// 누진세율 구간 정의
+const taxBrackets = [
+    { limit: 10000000, rate: 10, deduction: 0 },
+    { limit: 100000000, rate: 20, deduction: 1000000 },
+    { limit: 500000000, rate: 30, deduction: 6000000 },
+    { limit: 1000000000, rate: 40, deduction: 16000000 },
+    { limit: 3000000000, rate: 50, deduction: 46000000 },
+    { limit: Infinity, rate: 60, deduction: 66000000 },
+];
 // 증여세 계산 로직
 function calculateGiftTax(taxableAmount) {
     let tax = 0;
@@ -101,7 +109,26 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
 
     container.appendChild(newGiftEntry);
 });
+// 지연 신고 및 납부 가산세 계산
+function calculateLatePenalty(submissionDate, giftDate, giftTax) {
+    const date1 = new Date(giftDate);
+    const date2 = new Date(submissionDate);
+    const diffInDays = Math.floor((date2 - date1) / (1000 * 60 * 60 * 24));
 
+    let penaltyRate = 0;
+    let message = "기한 내 신고";
+    if (diffInDays > 30 && diffInDays <= 90) {
+        penaltyRate = 0.05;
+        message = "신고 기한 30일 초과";
+    } else if (diffInDays > 90) {
+        penaltyRate = 0.1;
+        message = "신고 기한 90일 초과";
+    }
+
+    const penalty = giftTax * penaltyRate;
+    console.log("Late Penalty:", penalty);
+    return { penalty, message };
+}
 // 계산 및 결과 표시
 document.getElementById('taxForm').onsubmit = function (e) {
     e.preventDefault();
