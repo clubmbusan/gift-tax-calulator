@@ -1,75 +1,78 @@
 // 증여세 누진세 계산 로직
 const taxBrackets = [
-    { limit: 100000000, rate: 10, deduction: 0 },
-    { limit: 500000000, rate: 20, deduction: 10000000 },
-    { limit: 1000000000, rate: 30, deduction: 60000000 },
-    { limit: 3000000000, rate: 40, deduction: 160000000 },
-    { limit: Infinity, rate: 50, deduction: 460000000 }
+    { limit: 10000000, rate: 10, deduction: 0 },          // 1천만 원 이하 10%
+    { limit: 100000000, rate: 20, deduction: 10000000 },  // 1억 원 이하 20%
+    { limit: 500000000, rate: 30, deduction: 60000000 },  // 5억 원 이하 30%
+    { limit: 1000000000, rate: 40, deduction: 160000000 },// 10억 원 이하 40%
+    { limit: 3000000000, rate: 50, deduction: 460000000 },// 30억 원 이하 50%
+    { limit: Infinity, rate: 60, deduction: 960000000 }   // 30억 원 초과 60%
 ];
 
-// 관계별 공제 한도 정의
-const exemptionLimits = {
-    child: 50000000,        // 성년 자녀
-    minorChild: 20000000,   // 미성년 자녀
-    spouse: 600000000,      // 배우자
-    inLaw: 50000000,        // 사위/며느리
-    other: 10000000         // 기타 타인
-};
-
 // 금액 입력 시 콤마 처리
-function parseCurrency(value) {
-    return parseInt(value.replace(/,/g, ''), 10) || 0;
-}
-
 document.addEventListener('input', function (e) {
-    if (e.target.classList.contains('amount-input')) {
+    if (['cashAmount', 'realEstateValue', 'stockPrice', 'amount'].includes(e.target.id)) {
         e.target.value = e.target.value
             .replace(/[^0-9]/g, '') // 숫자 외 문자 제거
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 콤마 추가
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 3자리마다 콤마 추가
     }
 });
 
-// 증여세 계산 로직 (누진세율 적용)
+// 관계별 공제 한도 계산
+function getExemptionAmount(relationship) {
+    const exemptions = {
+        'adultChild': 50000000,       // 성년 자녀 공제: 5천만 원
+        'minorChild': 20000000,       // 미성년 자녀 공제: 2천만 원
+        'spouse': 600000000,          // 배우자 공제: 6억 원
+        'sonInLawDaughterInLaw': 50000000, // 사위/며느리 공제: 5천만 원
+        'other': 1000000              // 타인 공제: 1천만 원
+    };
+    return exemptions[relationship] || 0;
+}
+
+// 증여세 계산 로직
 function calculateGiftTax(taxableAmount) {
     let tax = 0;
     let previousLimit = 0;
 
-    for (const bracket of taxBrackets) {
+    for (let i = 0; i < taxBrackets.length; i++) {
+        const bracket = taxBrackets[i];
+
         if (taxableAmount > bracket.limit) {
             tax += (bracket.limit - previousLimit) * (bracket.rate / 100);
             previousLimit = bracket.limit;
         } else {
             tax += (taxableAmount - previousLimit) * (bracket.rate / 100);
+            tax -= bracket.deduction;
             break;
         }
     }
-    return Math.max(tax, 0); // 세금이 음수로 나오지 않도록 0 이상으로 처리
+    return Math.max(tax, 0);
 }
 
-// 가산세 계산
+// 가산세 계산 로직
 function calculateLatePenalty(submissionDate, giftDate, giftTax) {
     const giftDateObj = new Date(giftDate);
     const submissionDateObj = new Date(submissionDate);
 
     if (!giftDate || !submissionDate || isNaN(giftDateObj) || isNaN(submissionDateObj)) {
-        return 0;
+        return { penalty: 0, message: "날짜가 잘못 입력되었습니다." };
     }
 
     const dueDate = new Date(giftDateObj);
-    dueDate.setMonth(dueDate.getMonth() + 3);
+    dueDate.setMonth(dueDate.getMonth() + 3); // 신고 기한: 증여일 + 3개월
 
     if (submissionDateObj <= dueDate) {
-        return 0; // 신고 기한 내 가산세 없음
+        return { penalty: 0, message: "신고 기한 내 신고 완료" };
     }
 
     const extendedDueDate = new Date(giftDateObj);
     extendedDueDate.setMonth(extendedDueDate.getMonth() + 6);
 
     if (submissionDateObj <= extendedDueDate) {
-        return giftTax * 0.1; // 3개월 초과 ~ 6개월 이내: 가산세 10%
+        return { penalty: giftTax * 0.1, message: "신고 기한 초과 (3~6개월)" };
     }
 
-    return giftTax * 0.2; // 6개월 초과: 가산세 20%
+    return { penalty: giftTax * 0.2, message: "신고 기한 초과 (6개월 초과)" };
 }
 
 // 과거 증여 금액 추가 버튼
@@ -78,63 +81,67 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
     const newGiftEntry = document.createElement('div');
     newGiftEntry.style.marginBottom = '10px';
     newGiftEntry.innerHTML = `
-        <input type="text" class="amount-input" placeholder="금액 입력 (원)">
-        <button type="button" class="removeGiftButton">삭제</button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="text" name="pastGiftAmount" placeholder="금액 입력" class="amount-input" style="flex: 2; padding: 5px; border: 1px solid #ddd; border-radius: 5px; height: 40px;">
+            <input type="date" name="pastGiftDate" style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 5px; height: 40px;">
+            <button type="button" class="removeGiftButton" style="background-color: #f44336; color: white; border: none; padding: 0 10px; cursor: pointer; border-radius: 5px; height: 40px; line-height: 40px; text-align: center; width: auto;">삭제</button>
+        </div>
     `;
 
     newGiftEntry.querySelector('.removeGiftButton').addEventListener('click', function () {
         container.removeChild(newGiftEntry);
     });
 
+    newGiftEntry.querySelector('.amount-input').addEventListener('input', function (e) {
+        const value = e.target.value.replace(/,/g, '');
+        if (!isNaN(value)) {
+            e.target.value = Number(value).toLocaleString();
+        }
+    });
+
     container.appendChild(newGiftEntry);
 });
 
-// 결과 출력
+// 계산 및 결과 표시
 document.getElementById('taxForm').onsubmit = function (e) {
     e.preventDefault();
 
-    const relationship = document.getElementById('relationship').value;
-    console.log('선택된 관계:', relationship);
-
-    const exemptionLimit = exemptionLimits[relationship] || 0;
-    console.log('적용된 공제 한도:', exemptionLimit);
-
     const selectedType = document.getElementById('assetType').value;
+    const relationship = document.getElementById('relationship').value;
     let giftAmount = 0;
 
     if (selectedType === 'cash') {
-        giftAmount = parseCurrency(document.getElementById('cashAmount')?.value || '0');
+        giftAmount = parseInt(document.getElementById('cashAmount').value.replace(/,/g, ''), 10) || 0;
     } else if (selectedType === 'realEstate') {
-        giftAmount = parseCurrency(document.getElementById('realEstateValue')?.value || '0');
+        giftAmount = parseInt(document.getElementById('realEstateValue').value.replace(/,/g, ''), 10) || 0;
     } else if (selectedType === 'stock') {
         const stockQuantity = parseInt(document.getElementById('stockQuantity')?.value || '0', 10);
-        const stockPrice = parseCurrency(document.getElementById('stockPrice')?.value || '0');
+        const stockPrice = parseInt(document.getElementById('stockPrice').value.replace(/,/g, ''), 10) || 0;
         giftAmount = stockQuantity * stockPrice;
     }
-    console.log('증여 금액:', giftAmount);
 
-    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('.amount-input');
+    const exemptionLimit = getExemptionAmount(relationship);
+    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
     let previousGiftTotal = 0;
+
     previousGiftInputs.forEach(input => {
-        const value = parseCurrency(input.value || '0');
-        if (!isNaN(value)) previousGiftTotal += value;
+        const value = parseInt(input.value.replace(/,/g, ''), 10) || 0;
+        if (!isNaN(value)) {
+            previousGiftTotal += value;
+        }
     });
-    console.log('과거 증여 금액 합산:', previousGiftTotal);
 
     const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
-    console.log('과세 표준:', taxableAmount);
-
     const giftTax = calculateGiftTax(taxableAmount);
-    console.log('증여세:', giftTax);
 
-    const giftDate = document.getElementById('giftDate')?.value;
-    const submissionDate = document.getElementById('submissionDate')?.value;
-    const latePenalty = calculateLatePenalty(submissionDate, giftDate, giftTax);
+    const giftDate = document.getElementById('giftDate').value;
+    const submissionDate = document.getElementById('submissionDate').value;
+    const { penalty: latePenalty, message: penaltyMessage } = calculateLatePenalty(submissionDate, giftDate, giftTax);
 
     const resultDiv = document.getElementById('result');
     resultDiv.innerHTML = `
         <p><strong>증여세:</strong> ${giftTax.toLocaleString()}원</p>
-        <p><strong>가산세:</strong> ${latePenalty.toLocaleString()}원</p>
+        <p><strong>가산세:</strong> ${latePenalty.toLocaleString()}원 (${penaltyMessage})</p>
         <p><strong>최종 납부세액:</strong> ${(giftTax + latePenalty).toLocaleString()}원</p>
     `;
 };
