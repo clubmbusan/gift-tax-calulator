@@ -123,27 +123,34 @@ document.getElementById('taxForm').onsubmit = function (e) {
     let giftAmount = 0;
 
     // 재산 유형에 따른 금액 계산
-    if (selectedType === 'cash') {
-        giftAmount = parseInt(document.getElementById('cashAmount').value.replace(/,/g, ''), 10) || 0;
-    } else if (selectedType === 'realEstate') {
-        giftAmount = parseInt(document.getElementById('realEstateValue').value.replace(/,/g, ''), 10) || 0;
-    } else if (selectedType === 'stock') {
-        const stockQuantity = parseInt(document.getElementById('stockQuantity').value || '0', 10);
-        const stockPrice = parseInt(document.getElementById('stockPrice').value.replace(/,/g, ''), 10) || 0;
-        giftAmount = stockQuantity * stockPrice;
+if (selectedType === 'cash') {
+    // 현금 유형: 사용자가 입력한 현금 금액
+    giftAmount = parseCurrency(document.getElementById('cashAmount')?.value || '0');
+} else if (selectedType === 'realEstate') {
+    // 부동산 유형: 사용자가 입력한 부동산 평가액
+    giftAmount = parseCurrency(document.getElementById('realEstateValue')?.value || '0');
+} else if (selectedType === 'stock') {
+    // 주식 유형: 주식 수량과 주식 1주당 가격을 곱한 금액
+    const stockQuantity = parseInt(document.getElementById('stockQuantity')?.value || '0', 10);
+    const stockPrice = parseCurrency(document.getElementById('stockPrice')?.value || '0');
+    giftAmount = stockQuantity * stockPrice;
+} else {
+    giftAmount = 0; // 재산 유형이 선택되지 않은 경우
+}
+
+// 관계별 공제 한도 계산
+const exemptionLimit = getExemptionAmount(relationship);
+
+// 과거 증여 금액 합산
+const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
+let previousGiftTotal = 0;
+
+previousGiftInputs.forEach(input => {
+    const value = parseCurrency(input.value || '0');
+    if (!isNaN(value)) {
+        previousGiftTotal += value; // 과거 증여 금액을 누적
     }
-
-    const exemptionLimit = getExemptionAmount(relationship); // 관계별 공제 한도 계산
-    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
-    let previousGiftTotal = 0;
-
-    // 과거 증여 금액 합산
-    previousGiftInputs.forEach(input => {
-        const value = parseInt(input.value.replace(/,/g, ''), 10) || 0;
-        if (!isNaN(value)) {
-            previousGiftTotal += value;
-        }
-    });
+});
 
     const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
     const giftTax = calculateGiftTax(taxableAmount);
