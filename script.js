@@ -13,11 +13,24 @@ const taxBrackets = [
 // 사용자가 금액을 입력할 때 자동으로 콤마를 추가합니다.
 document.addEventListener('input', function (e) {
     if (['cashAmount', 'realEstateValue', 'stockPrice', 'amount'].includes(e.target.id)) {
-        e.target.value = e.target.value
-            .replace(/[^0-9]/g, '') // 숫자 외 문자 제거
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 3자리마다 콤마 추가
+        const inputField = e.target;
+
+        // 기존 커서 위치 저장
+        const cursorPosition = inputField.selectionStart;
+
+        // 입력값에서 숫자 외 문자 제거 및 포맷팅
+        const rawValue = inputField.value.replace(/[^0-9]/g, ''); // 숫자만 남김
+        const formattedValue = parseInt(rawValue || '0', 10).toLocaleString();
+
+        // 필드 값 업데이트
+        inputField.value = formattedValue;
+
+        // 커서 위치 복원
+        const newCursorPosition = cursorPosition + (formattedValue.length - rawValue.length);
+        inputField.setSelectionRange(newCursorPosition, newCursorPosition);
     }
 });
+
 
 // 관계별 공제 한도 계산
 function getExemptionAmount(relationship) {
