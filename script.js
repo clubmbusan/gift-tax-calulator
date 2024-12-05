@@ -101,6 +101,7 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
     // 삭제 버튼 동작 추가
     newGiftEntry.querySelector('.removeGiftButton').addEventListener('click', function () {
         container.removeChild(newGiftEntry);
+        updateDynamicTaxableAmount(); // 과세 금액 업데이트
     });
 
     newGiftEntry.querySelector('.amount-input').addEventListener('input', function (e) {
@@ -108,9 +109,11 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
         if (!isNaN(value)) {
             e.target.value = Number(value).toLocaleString();
         }
+        updateDynamicTaxableAmount(); // 과세 금액 업데이트
     });
 
     container.appendChild(newGiftEntry);
+    updateDynamicTaxableAmount(); // 과세 금액 업데이트
 });
 // JavaScript 로드가 HTML 로드 이후에 이루어지도록 설정
 document.addEventListener('DOMContentLoaded', function () {
@@ -224,7 +227,6 @@ console.log('가산세 확인:', latePenalty, penaltyMessage); // 추가된 로�
 // 결과 표시
 const resultDiv = document.getElementById('result');
 resultDiv.innerHTML = `
-    <p><strong>과세 금액:</strong> ${taxableAmount.toLocaleString()}원</p>
     <p><strong>증여세:</strong> ${giftTax.toLocaleString()}원</p>
     <p><strong>가산세:</strong> ${latePenalty.toLocaleString()}원 (${penaltyMessage})</p>
     <p><strong>최종 납부세액:</strong> ${(giftTax + latePenalty).toLocaleString()}원</p>
