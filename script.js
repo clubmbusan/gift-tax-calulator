@@ -122,27 +122,32 @@ document.getElementById('taxForm').onsubmit = function (e) {
     const relationship = document.getElementById('relationship').value; // 증여 관계
     let giftAmount = 0;
 
-    // 재산 유형 선택 시 입력 필드 변경
+  // 재산 유형 선택 시 입력 필드 변경
 document.getElementById('assetType').addEventListener('change', function (e) {
-    const selectedType = e.target.value; // 선택된 재산 유형
+    console.log('재산 유형 선택 이벤트 호출됨:', e.target.value); // 추가된 로그
 
-    // 각 입력 필드를 명확히 참조
-    const cashField = document.getElementById('cashInputField'); // 현금 입력 필드 그룹
-    const realEstateField = document.getElementById('realEstateInputField'); // 부동산 입력 필드 그룹
-    const stockField = document.getElementById('stockInputField'); // 주식 입력 필드 그룹
+    const selectedType = e.target.value;
+
+    const cashField = document.getElementById('cashInputField');
+    const realEstateField = document.getElementById('realEstateInputField');
+    const stockField = document.getElementById('stockInputField');
 
     // 모든 입력 필드를 초기화 (숨김 처리)
+    console.log('모든 입력 필드 숨김 처리 시작'); // 추가된 로그
     cashField.style.display = 'none';
     realEstateField.style.display = 'none';
     stockField.style.display = 'none';
 
-    // 선택된 유형에 따라 해당 입력 필드 표시
+    // 선택된 유형에 따라 필드 표시
     if (selectedType === 'cash') {
         cashField.style.display = 'block';
+        console.log('현금 입력 필드 표시됨'); // 추가된 로그
     } else if (selectedType === 'realEstate') {
         realEstateField.style.display = 'block';
+        console.log('부동산 입력 필드 표시됨'); // 추가된 로그
     } else if (selectedType === 'stock') {
         stockField.style.display = 'block';
+        console.log('주식 입력 필드 표시됨'); // 추가된 로그
     }
 });
 
