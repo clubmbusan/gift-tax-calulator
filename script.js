@@ -112,17 +112,7 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
 
     container.appendChild(newGiftEntry);
 });
-
-// 계산 및 결과 표시
-// 사용자 입력 데이터를 바탕으로 최종 결과를 계산하고 표시합니다.
-document.getElementById('taxForm').onsubmit = function (e) {
-    e.preventDefault();
-
-    const selectedType = document.getElementById('assetType').value; // 재산 유형 선택
-    const relationship = document.getElementById('relationship').value; // 증여 관계
-    let giftAmount = 0;
-
-    // JavaScript 로드가 HTML 로드 이후에 이루어지도록 설정
+// JavaScript 로드가 HTML 로드 이후에 이루어지도록 설정
 document.addEventListener('DOMContentLoaded', function () {
     // assetType 요소를 참조하고 Console에 출력
     const assetType = document.getElementById('assetType');
@@ -133,58 +123,70 @@ document.addEventListener('DOMContentLoaded', function () {
         return; // assetType이 없으면 실행 중지
     }
 
-// 재산 유형 선택 시 입력 필드 변경
-document.getElementById('assetType').addEventListener('change', function (e) {
-    const selectedType = e.target.value;
+    // 재산 유형 선택 시 입력 필드 변경
+    assetType.addEventListener('change', function (e) {
+        console.log('재산 유형 선택 이벤트 호출됨:', e.target.value); // 선택된 값 확인
 
-    const cashField = document.getElementById('cashInputField');
-    const realEstateField = document.getElementById('realEstateInputField');
-    const stockField = document.getElementById('stockInputField');
+        const selectedType = e.target.value;
 
-    // 모든 입력 필드를 초기화 (숨김 처리)
-    cashField.style.display = 'none';
-    realEstateField.style.display = 'none';
-    stockField.style.display = 'none';
+        const cashField = document.getElementById('cashInputField');
+        const realEstateField = document.getElementById('realEstateInputField');
+        const stockField = document.getElementById('stockInputField');
 
-    // 선택된 유형에 따라 필드 표시
+        // 모든 입력 필드를 초기화 (숨김 처리)
+        cashField.style.display = 'none';
+        realEstateField.style.display = 'none';
+        stockField.style.display = 'none';
+
+        // 선택된 유형에 따라 필드 표시
+        if (selectedType === 'cash') {
+            cashField.style.display = 'block';
+        } else if (selectedType === 'realEstate') {
+            realEstateField.style.display = 'block';
+        } else if (selectedType === 'stock') {
+            stockField.style.display = 'block';
+        }
+    });
+});
+
+// 계산 및 결과 표시
+// 사용자 입력 데이터를 바탕으로 최종 결과를 계산하고 표시합니다.
+document.getElementById('taxForm').onsubmit = function (e) {
+    e.preventDefault();
+
+    const selectedType = document.getElementById('assetType').value; // 재산 유형 선택
+    const relationship = document.getElementById('relationship').value; // 증여 관계
+    let giftAmount = 0;
+
+    // 재산 유형에 따른 금액 계산
     if (selectedType === 'cash') {
-        cashField.style.display = 'block';
+        // 현금 유형: 사용자가 입력한 현금 금액
+        giftAmount = parseCurrency(document.getElementById('cashAmount').value || '0');
     } else if (selectedType === 'realEstate') {
-        realEstateField.style.display = 'block';
+        // 부동산 유형: 사용자가 입력한 부동산 평가액
+        giftAmount = parseCurrency(document.getElementById('realEstateValue').value || '0');
     } else if (selectedType === 'stock') {
-        stockField.style.display = 'block';
+        // 주식 유형: 주식 수량과 주식 1주당 가격을 곱한 금액
+        const stockQuantity = parseInt(document.getElementById('stockQuantity').value || '0', 10);
+        const stockPrice = parseCurrency(document.getElementById('stockPrice').value || '0');
+        giftAmount = stockQuantity * stockPrice;
+    } else {
+        giftAmount = 0; // 재산 유형이 선택되지 않은 경우
     }
-});
 
-  // 재산 유형에 따른 금액 계산
-if (selectedType === 'cash') {
-    // 현금 유형: 사용자가 입력한 현금 금액
-    giftAmount = parseCurrency(document.getElementById('cashAmount')?.value || '0');
-} else if (selectedType === 'realEstate') {
-    // 부동산 유형: 사용자가 입력한 부동산 평가액
-    giftAmount = parseCurrency(document.getElementById('realEstateValue')?.value || '0');
-} else if (selectedType === 'stock') {
-    // 주식 유형: 주식 수량과 주식 1주당 가격을 곱한 금액
-    const stockQuantity = parseInt(document.getElementById('stockQuantity')?.value || '0', 10);
-    const stockPrice = parseCurrency(document.getElementById('stockPrice')?.value || '0');
-    giftAmount = stockQuantity * stockPrice;
-} else {
-    giftAmount = 0; // 재산 유형이 선택되지 않은 경우
-}
+    // 관계별 공제 한도 계산
+    const exemptionLimit = getExemptionAmount(relationship);
 
-// 관계별 공제 한도 계산
-const exemptionLimit = getExemptionAmount(relationship);
+    // 과거 증여 금액 합산
+    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
+    let previousGiftTotal = 0;
 
-// 과거 증여 금액 합산
-const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
-let previousGiftTotal = 0;
-
-previousGiftInputs.forEach(input => {
-    const value = parseCurrency(input.value || '0');
-    if (!isNaN(value)) {
-        previousGiftTotal += value; // 과거 증여 금액을 누적
-    }
-});
+    previousGiftInputs.forEach(input => {
+        const value = parseCurrency(input.value || '0');
+        if (!isNaN(value)) {
+            previousGiftTotal += value; // 과거 증여 금액을 누적
+        }
+    });
 
     const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
     const giftTax = calculateGiftTax(taxableAmount);
@@ -200,3 +202,9 @@ previousGiftInputs.forEach(input => {
         <p><strong>최종 납부세액:</strong> ${(giftTax + latePenalty).toLocaleString()}원</p>
     `;
 };
+
+// parseCurrency 함수 정의
+function parseCurrency(value) {
+    return parseInt(value.replace(/,/g, ''), 10) || 0; // 콤마 제거 후 정수 변환
+}
+
