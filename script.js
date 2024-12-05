@@ -12,24 +12,30 @@ const taxBrackets = [
 // 금액 입력 시 콤마 처리
 // 사용자가 금액을 입력할 때 자동으로 콤마를 추가합니다.
 document.addEventListener('input', function (e) {
+    // 해당 ID 또는 클래스가 적용된 필드만 처리
     if (['cashAmount', 'realEstateValue', 'stockPrice', 'amount'].includes(e.target.id) || e.target.classList.contains('amount-input')) {
         const inputField = e.target;
 
-        // 기존 커서 위치 저장
-        const cursorPosition = inputField.selectionStart;
-
-        // 입력값에서 숫자 외 문자 제거 및 포맷팅
+        // 현재 입력값에서 숫자 외 모든 문자 제거
         const rawValue = inputField.value.replace(/[^0-9]/g, ''); // 숫자만 남김
-        const formattedValue = parseInt(rawValue || '0', 10).toLocaleString();
+
+        if (rawValue === '') {
+            inputField.value = ''; // 빈 값 처리
+            return;
+        }
+
+        // 콤마 추가하여 포맷팅
+        const formattedValue = parseInt(rawValue, 10).toLocaleString();
 
         // 필드 값 업데이트
         inputField.value = formattedValue;
 
-        // 커서 위치 복원
-        const newCursorPosition = cursorPosition + (formattedValue.length - rawValue.length);
-        inputField.setSelectionRange(newCursorPosition, newCursorPosition);
+        // 커서 위치 복원 (선택적으로 추가)
+        const cursorPosition = inputField.selectionStart;
+        inputField.setSelectionRange(cursorPosition, cursorPosition);
     }
 });
+
 
 
 // 관계별 공제 한도 계산
