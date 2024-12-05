@@ -106,6 +106,35 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
     return { penalty: giftTax * 0.2, message: "신고 기한 초과 (6개월 초과)" };
 }
 
+// 과세 금액 실시간 업데이트 함수
+function updateDynamicTaxableAmount() {
+    const giftAmount = parseCurrency(document.getElementById('cashAmount')?.value || '0'); // 현재 증여 금액
+    const relationship = document.getElementById('relationship').value; // 선택된 관계
+
+    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('.amount-input');
+    const previousGiftDates = document.getElementById('previousGifts').querySelectorAll('input[type="date"]');
+    let previousGifts = [];
+
+    previousGiftInputs.forEach((input, index) => {
+        const amount = parseCurrency(input.value || '0');
+        const date = previousGiftDates[index]?.value || null;
+        if (!isNaN(amount) && date) {
+            previousGifts.push({ amount, date });
+        }
+    });
+
+    // 관계별 공제 계산
+    const adjustedExemption = calculateAdjustedExemption(relationship, previousGifts);
+
+    // 과세 금액 계산
+    const taxableAmount = Math.max(giftAmount - adjustedExemption, 0);
+
+    // 과표 업데이트
+    const taxableAmountInput = document.getElementById('calculatedTaxableAmount');
+    if (taxableAmountInput) {
+        taxableAmountInput.value = taxableAmount.toLocaleString(); // 과세 금액 업데이트
+    }
+}
 // 과거 증여 금액 추가 버튼
 document.getElementById('addGiftButton').addEventListener('click', function () {
     const container = document.getElementById('previousGifts');
@@ -202,37 +231,7 @@ document.getElementById('taxForm').onsubmit = function (e) {
     // 관계별 공제 한도 계산
     const exemptionLimit = getExemptionAmount(relationship);
 
-    // 과세 금액 실시간 업데이트 함수
-function updateDynamicTaxableAmount() {
-    const giftAmount = parseCurrency(document.getElementById('cashAmount')?.value || '0'); // 현재 증여 금액
-    const relationship = document.getElementById('relationship').value; // 선택된 관계
-
-    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('.amount-input');
-    const previousGiftDates = document.getElementById('previousGifts').querySelectorAll('input[type="date"]');
-    let previousGifts = [];
-
-    previousGiftInputs.forEach((input, index) => {
-        const amount = parseCurrency(input.value || '0');
-        const date = previousGiftDates[index]?.value || null;
-        if (!isNaN(amount) && date) {
-            previousGifts.push({ amount, date });
-        }
-    });
-
-    // 관계별 공제 계산
-    const adjustedExemption = calculateAdjustedExemption(relationship, previousGifts);
-
-    // 과세 금액 계산
-    const taxableAmount = Math.max(giftAmount - adjustedExemption, 0);
-
-    // 과표 업데이트
-    const taxableAmountInput = document.getElementById('calculatedTaxableAmount');
-    if (taxableAmountInput) {
-        taxableAmountInput.value = taxableAmount.toLocaleString(); // 과세 금액 업데이트
-    }
-}
-
-// 과거 증여 금액 합산
+ // 과거 증여 금액 합산
 const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
 let previousGiftTotal = 0;
 
