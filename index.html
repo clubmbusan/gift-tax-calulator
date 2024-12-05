@@ -58,10 +58,13 @@
          
            <!-- 과거 증여 금액 -->
            <label>과거 증여 금액:</label>
+           <div id="previousGiftsContainer" style="display: none; margin-top: 10px;">
            <div id="previousGifts"></div>
-            <div id="pastGiftTotalDisplay" style="margin-top: 10px;">
-              <p><strong>과거 증여 금액 합계:</strong> <span id="pastGiftTotalValue">0</span> 원</p>
-            </div>
+           <div id="taxableAmountDisplay" style="margin-top: 10px;">
+           <label for="calculatedTaxableAmount">과표:</label>
+           <input type="text" id="calculatedTaxableAmount" readonly placeholder="자동 계산됨" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 5px;">
+           </div>
+           </div>
            <button type="button" id="addGiftButton">과거 증여 금액 추가</button>
 
            <!-- 과세 금액 표시 영역 -->
