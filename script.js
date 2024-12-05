@@ -122,6 +122,17 @@ document.getElementById('taxForm').onsubmit = function (e) {
     const relationship = document.getElementById('relationship').value; // 증여 관계
     let giftAmount = 0;
 
+    // JavaScript 로드가 HTML 로드 이후에 이루어지도록 설정
+document.addEventListener('DOMContentLoaded', function () {
+    // assetType 요소를 참조하고 Console에 출력
+    const assetType = document.getElementById('assetType');
+    console.log('assetType 참조 확인:', assetType); // assetType 요소 확인
+
+    if (!assetType) {
+        console.error('assetType 요소를 찾을 수 없습니다.'); // 오류 메시지
+        return; // assetType이 없으면 실행 중지
+    }
+
 // 재산 유형 선택 시 입력 필드 변경
 document.getElementById('assetType').addEventListener('change', function (e) {
     const selectedType = e.target.value;
