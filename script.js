@@ -1,5 +1,3 @@
-console.log("JavaScript 파일 로드 완료");
-
 // 증여세 누진세 계산 로직
 // 각 증여 금액 구간에 따른 세율 및 공제액을 정의합니다.
 const taxBrackets = [
