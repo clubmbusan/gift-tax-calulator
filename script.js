@@ -20,7 +20,6 @@ document.addEventListener('input', function (e) {
 });
 
 // 관계별 공제 한도 계산
-// 증여 관계에 따라 공제 한도를 설정합니다.
 function getExemptionAmount(relationship) {
     const exemptions = {
         'adultChild': 50000000,       // 성년 자녀 공제: 5천만 원
@@ -30,6 +29,29 @@ function getExemptionAmount(relationship) {
         'other': 1000000              // 타인 공제: 1천만 원
     };
     return exemptions[relationship] || 0; // 관계가 정의되지 않으면 기본값 0 반환
+}
+
+// 여기 아래에 추가합니다.
+function calculateAdjustedExemption(relationship, previousGifts) {
+    const baseExemption = getExemptionAmount(relationship);
+    const currentDate = new Date();
+
+    let adjustedExemption = baseExemption;
+
+    previousGifts.forEach(gift => {
+        const giftDate = new Date(gift.date);
+        const yearsDifference = (currentDate - giftDate) / (1000 * 60 * 60 * 24 * 365);
+
+        if (
+            (relationship === 'adultChild' && yearsDifference <= 10) || // 직계 비속: 10년
+            (relationship === 'sonInLawDaughterInLaw' && yearsDifference <= 5) || // 사위/며느리: 5년
+            (relationship === 'other' && yearsDifference <= 10) // 기타: 10년
+        ) {
+            adjustedExemption -= gift.amount;
+        }
+    });
+
+    return Math.max(adjustedExemption, 0); // 공제 금액은 음수가 되지 않도록 처리
 }
 
 // 증여세 계산 로직
