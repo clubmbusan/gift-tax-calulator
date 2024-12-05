@@ -83,35 +83,11 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
 
     return { penalty: giftTax * 0.2, message: "신고 기한 초과 (6개월 초과)" };
 }
-// 과세 금액 실시간 업데이트 함수
-function updateDynamicTaxableAmount() {
-    const giftAmount = parseCurrency(document.getElementById('cashAmount')?.value || '0'); // 현금 금액
-    const exemptionLimit = getExemptionAmount(document.getElementById('relationship').value); // 공제 한도
-
-    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('.amount-input');
-    let previousGiftTotal = 0;
-
-    previousGiftInputs.forEach(input => {
-        const value = parseCurrency(input.value || '0');
-        if (!isNaN(value)) {
-            previousGiftTotal += value; // 과거 증여 금액 합산
-        }
-    });
-
-    const adjustedExemption = Math.max(exemptionLimit - previousGiftTotal, 0); // 공제 한도 조정
-    const taxableAmount = Math.max(giftAmount - adjustedExemption, 0); // 과세 금액 계산
-
-    const taxableAmountSpan = document.getElementById('dynamicTaxableAmountValue');
-    if (taxableAmountSpan) {
-        taxableAmountSpan.textContent = taxableAmount.toLocaleString(); // 과세 금액 업데이트
-    }
-}
 
 // 과거 증여 금액 추가 버튼
+// 사용자가 버튼을 클릭하면 금액 및 날짜 입력 필드가 생성됩니다.
 document.getElementById('addGiftButton').addEventListener('click', function () {
-    const container = document.getElementById('previousGiftsContainer');
-    container.style.display = 'block'; // 컨테이너 표시
-
+    const container = document.getElementById('previousGifts');
     const newGiftEntry = document.createElement('div');
     newGiftEntry.style.marginBottom = '10px';
     newGiftEntry.innerHTML = `
@@ -124,8 +100,7 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
 
     // 삭제 버튼 동작 추가
     newGiftEntry.querySelector('.removeGiftButton').addEventListener('click', function () {
-        newGiftEntry.remove(); // 항목 삭제
-        updateDynamicTaxableAmount(); // 과세 금액 업데이트
+        container.removeChild(newGiftEntry);
     });
 
     newGiftEntry.querySelector('.amount-input').addEventListener('input', function (e) {
@@ -133,13 +108,10 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
         if (!isNaN(value)) {
             e.target.value = Number(value).toLocaleString();
         }
-        updateDynamicTaxableAmount(); // 과세 금액 업데이트
     });
 
-    container.querySelector('#previousGifts').appendChild(newGiftEntry);
-    updateDynamicTaxableAmount(); // 과세 금액 업데이트
+    container.appendChild(newGiftEntry);
 });
-
 // JavaScript 로드가 HTML 로드 이후에 이루어지도록 설정
 document.addEventListener('DOMContentLoaded', function () {
     // assetType 요소를 참조하고 Console에 출력
@@ -188,18 +160,20 @@ document.getElementById('taxForm').onsubmit = function (e) {
 
     // 재산 유형에 따른 금액 계산
     if (selectedType === 'cash') {
+        // 현금 유형: 사용자가 입력한 현금 금액
         giftAmount = parseCurrency(document.getElementById('cashAmount').value || '0');
     } else if (selectedType === 'realEstate') {
+        // 부동산 유형: 사용자가 입력한 부동산 평가액
         giftAmount = parseCurrency(document.getElementById('realEstateValue').value || '0');
     } else if (selectedType === 'stock') {
+        // 주식 유형: 주식 수량과 주식 1주당 가격을 곱한 금액
         const stockQuantity = parseInt(document.getElementById('stockQuantity').value || '0', 10);
         const stockPrice = parseCurrency(document.getElementById('stockPrice').value || '0');
         giftAmount = stockQuantity * stockPrice;
     } else {
         giftAmount = 0; // 재산 유형이 선택되지 않은 경우
     }
-    console.log('giftAmount 확인:', giftAmount); // 추가된 콘솔 로그
-
+   
     // 관계별 공제 한도 계산
     const exemptionLimit = getExemptionAmount(relationship);
 
@@ -214,44 +188,19 @@ document.getElementById('taxForm').onsubmit = function (e) {
         }
     });
 
-    // 공제 한도에서 과거 증여 금액 차감
-    const adjustedExemption = Math.max(exemptionLimit - previousGiftTotal, 0);
-    console.log('adjustedExemption 확인:', adjustedExemption); // 공제 한도 확인
+    const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
+    const giftTax = calculateGiftTax(taxableAmount);
 
-    // 과세 금액 계산
-    const taxableAmount = Math.max(giftAmount - adjustedExemption, 0);
-    console.log('taxableAmount 확인:', taxableAmount); // 추가된 콘솔 로그
+    const giftDate = document.getElementById('giftDate').value;
+    const submissionDate = document.getElementById('submissionDate').value;
+    const { penalty: latePenalty, message: penaltyMessage } = calculateLatePenalty(submissionDate, giftDate, giftTax);
 
-    // 과세 금액 표시 업데이트 추가
-    const taxableAmountDiv = document.getElementById('taxableAmountDisplay');
-    if (!taxableAmountDiv) {
-        const resultDiv = document.getElementById('result');
-        const newDiv = document.createElement('div');
-        newDiv.id = 'taxableAmountDisplay';
-        newDiv.innerHTML = `<p><strong>과세 금액:</strong> ${taxableAmount.toLocaleString()}원</p>`;
-        resultDiv.prepend(newDiv);
-    } else {
-        taxableAmountDiv.innerHTML = `<p><strong>과세 금액:</strong> ${taxableAmount.toLocaleString()}원</p>`;
-    }
-};
-
-// 증여세 계산
-const giftTax = calculateGiftTax(taxableAmount);
-console.log('giftTax 확인:', giftTax); // 추가된 로그
-
-// 신고 날짜 관련 정보
-const giftDate = document.getElementById('giftDate').value;
-const submissionDate = document.getElementById('submissionDate').value;
-const { penalty: latePenalty, message: penaltyMessage } = calculateLatePenalty(submissionDate, giftDate, giftTax);
-console.log('가산세 확인:', latePenalty, penaltyMessage); // 추가된 로그
-
-// 결과 표시
-const resultDiv = document.getElementById('result');
-resultDiv.innerHTML = `
-    <p><strong>증여세:</strong> ${giftTax.toLocaleString()}원</p>
-    <p><strong>가산세:</strong> ${latePenalty.toLocaleString()}원 (${penaltyMessage})</p>
-    <p><strong>최종 납부세액:</strong> ${(giftTax + latePenalty).toLocaleString()}원</p>
-`;
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = `
+        <p><strong>증여세:</strong> ${giftTax.toLocaleString()}원</p>
+        <p><strong>가산세:</strong> ${latePenalty.toLocaleString()}원 (${penaltyMessage})</p>
+        <p><strong>최종 납부세액:</strong> ${(giftTax + latePenalty).toLocaleString()}원</p>
+    `;
 };
 // 주식 총 금액 자동 계산
 document.getElementById('stockInputField').addEventListener('input', function () {
@@ -280,4 +229,3 @@ document.getElementById('stockInputField').addEventListener('input', function ()
 function parseCurrency(value) {
     return parseInt(value.replace(/,/g, ''), 10) || 0; // 콤마 제거 후 정수 변환
 }
-
