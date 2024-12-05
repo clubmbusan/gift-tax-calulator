@@ -124,7 +124,7 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
 
     // 삭제 버튼 동작 추가
     newGiftEntry.querySelector('.removeGiftButton').addEventListener('click', function () {
-        container.removeChild(newGiftEntry);
+        newGiftEntry.remove(); // 항목 삭제
         updateDynamicTaxableAmount(); // 과세 금액 업데이트
     });
 
