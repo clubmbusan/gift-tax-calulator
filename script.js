@@ -122,10 +122,8 @@ document.getElementById('taxForm').onsubmit = function (e) {
     const relationship = document.getElementById('relationship').value; // 증여 관계
     let giftAmount = 0;
 
-  // 재산 유형 선택 시 입력 필드 변경
+// 재산 유형 선택 시 입력 필드 변경
 document.getElementById('assetType').addEventListener('change', function (e) {
-    console.log('재산 유형 선택 이벤트 호출됨:', e.target.value); // 추가된 로그
-
     const selectedType = e.target.value;
 
     const cashField = document.getElementById('cashInputField');
@@ -136,13 +134,14 @@ document.getElementById('assetType').addEventListener('change', function (e) {
     cashField.style.display = 'none';
     realEstateField.style.display = 'none';
     stockField.style.display = 'none';
+
     // 선택된 유형에 따라 필드 표시
     if (selectedType === 'cash') {
-        cashField.style.display = 'block';     
+        cashField.style.display = 'block';
     } else if (selectedType === 'realEstate') {
-        realEstateField.style.display = 'block';        
+        realEstateField.style.display = 'block';
     } else if (selectedType === 'stock') {
-        stockField.style.display = 'block';      
+        stockField.style.display = 'block';
     }
 });
 
