@@ -135,21 +135,16 @@ document.getElementById('assetType').addEventListener('change', function (e) {
     const stockField = document.getElementById('stockInputField');
 
     // 모든 입력 필드를 초기화 (숨김 처리)
-    console.log('모든 입력 필드 숨김 처리 시작'); // 추가된 로그
     cashField.style.display = 'none';
     realEstateField.style.display = 'none';
     stockField.style.display = 'none';
-
     // 선택된 유형에 따라 필드 표시
     if (selectedType === 'cash') {
-        cashField.style.display = 'block';
-        console.log('현금 입력 필드 표시됨'); // 추가된 로그
+        cashField.style.display = 'block';     
     } else if (selectedType === 'realEstate') {
-        realEstateField.style.display = 'block';
-        console.log('부동산 입력 필드 표시됨'); // 추가된 로그
+        realEstateField.style.display = 'block';        
     } else if (selectedType === 'stock') {
-        stockField.style.display = 'block';
-        console.log('주식 입력 필드 표시됨'); // 추가된 로그
+        stockField.style.display = 'block';      
     }
 });
 
