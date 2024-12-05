@@ -175,22 +175,26 @@ document.getElementById('taxForm').onsubmit = function (e) {
     }
     console.log('giftAmount 확인:', giftAmount); // 추가된 콘솔 로그
     
-    // 관계별 공제 한도 계산
-    const exemptionLimit = getExemptionAmount(relationship);
+   // 관계별 공제 한도 계산
+const exemptionLimit = getExemptionAmount(relationship);
 
-    // 과거 증여 금액 합산
-    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
-    let previousGiftTotal = 0;
+// 과거 증여 금액 합산
+const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
+let previousGiftTotal = 0;
 
-    previousGiftInputs.forEach(input => {
-        const value = parseCurrency(input.value || '0');
-        if (!isNaN(value)) {
-            previousGiftTotal += value; // 과거 증여 금액을 누적
-        }
-    });
-    
-  // 과세 금액 계산
-const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
+previousGiftInputs.forEach(input => {
+    const value = parseCurrency(input.value || '0');
+    if (!isNaN(value)) {
+        previousGiftTotal += value; // 과거 증여 금액을 누적
+    }
+});
+
+// 공제 한도에서 과거 증여 금액 차감
+const adjustedExemption = Math.max(exemptionLimit - previousGiftTotal, 0);
+console.log('adjustedExemption 확인:', adjustedExemption); // 공제 한도 확인
+
+// 과세 금액 계산
+const taxableAmount = Math.max(giftAmount - adjustedExemption, 0);
 console.log('taxableAmount 확인:', taxableAmount); // 추가된 콘솔 로그
 
 // 과세 금액 표시 업데이트 추가
@@ -200,8 +204,7 @@ if (!taxableAmountDiv) {
     const resultDiv = document.getElementById('result');
     const newDiv = document.createElement('div');
     newDiv.id = 'taxableAmountDisplay';
-    newDiv.innerHTML = `<p><strong>과세 금액:</strong> ${taxableAmount.toLocaleString()}원</p>`; 
-
+    newDiv.innerHTML = `<p><strong>과세 금액:</strong> ${taxableAmount.toLocaleString()}원</p>`;
     resultDiv.prepend(newDiv); // 결과 영역 맨 위에 추가
 } else {
     // 기존 과세 금액 영역 업데이트
