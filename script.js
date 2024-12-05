@@ -173,7 +173,8 @@ document.getElementById('taxForm').onsubmit = function (e) {
     } else {
         giftAmount = 0; // 재산 유형이 선택되지 않은 경우
     }
-   
+    console.log('giftAmount 확인:', giftAmount); // 추가된 콘솔 로그
+    
     // 관계별 공제 한도 계산
     const exemptionLimit = getExemptionAmount(relationship);
 
@@ -189,8 +190,11 @@ document.getElementById('taxForm').onsubmit = function (e) {
     });
 
     const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
+    console.log('taxableAmount 확인:', taxableAmount); // 추가된 콘솔 로그
+    
     const giftTax = calculateGiftTax(taxableAmount);
-
+    console.log('giftTax 확인:', giftTax); // 추가된 콘솔 로그
+    
     const giftDate = document.getElementById('giftDate').value;
     const submissionDate = document.getElementById('submissionDate').value;
     const { penalty: latePenalty, message: penaltyMessage } = calculateLatePenalty(submissionDate, giftDate, giftTax);
