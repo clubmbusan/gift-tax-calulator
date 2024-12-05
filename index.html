@@ -56,16 +56,16 @@
                 <option value="other">타인(친구, 친인척 등) - 공제 한도: 10,000,000원</option>
             </select>
          
-            <!-- 과거 증여 금액 -->
-            <label>과거 증여 금액:</label>
-            <div id="previousGifts"></div>
-            <button type="button" id="addGiftButton">과거 증여 금액 추가</button>
+           <!-- 과거 증여 금액 -->
+           <label>과거 증여 금액:</label>
+           <div id="previousGifts"></div>
+           <button type="button" id="addGiftButton">과거 증여 금액 추가</button>
 
-            <!-- 과세 금액 표시 -->
-            <div id="taxableAmountDisplay">
-           <p><strong>과세 금액:</strong> <span id="calculatedTaxableAmount">0</span> 원</p>
-          </div>
-           
+           <!-- 과세 금액 표시 영역 -->
+           <div id="dynamicTaxableAmount" style="margin-top: 10px;">
+           <p><strong>현재 과세 금액:</strong> <span id="dynamicTaxableAmountValue">0</span> 원</p>
+           </div>
+
             <!-- 증여일 -->
             <label for="giftDate">증여일:</label>
             <input type="date" id="giftDate" placeholder="연도-월-일">
