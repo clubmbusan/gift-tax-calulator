@@ -12,7 +12,7 @@ const taxBrackets = [
 // 금액 입력 시 콤마 처리
 // 사용자가 금액을 입력할 때 자동으로 콤마를 추가합니다.
 document.addEventListener('input', function (e) {
-    if (['cashAmount', 'realEstateValue', 'stockPrice', 'amount'].includes(e.target.id)) {
+    if (['cashAmount', 'realEstateValue', 'stockPrice', 'amount'].includes(e.target.id) || e.target.classList.contains('amount-input')) {
         const inputField = e.target;
 
         // 기존 커서 위치 저장
