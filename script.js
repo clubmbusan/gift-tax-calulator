@@ -108,9 +108,10 @@ function updateDynamicTaxableAmount() {
 }
 
 // 과거 증여 금액 추가 버튼
-// 사용자가 버튼을 클릭하면 금액 및 날짜 입력 필드가 생성됩니다.
 document.getElementById('addGiftButton').addEventListener('click', function () {
-    const container = document.getElementById('previousGifts');
+    const container = document.getElementById('previousGiftsContainer');
+    container.style.display = 'block'; // 컨테이너 표시
+
     const newGiftEntry = document.createElement('div');
     newGiftEntry.style.marginBottom = '10px';
     newGiftEntry.innerHTML = `
@@ -135,9 +136,10 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
         updateDynamicTaxableAmount(); // 과세 금액 업데이트
     });
 
-    container.appendChild(newGiftEntry);
+    container.querySelector('#previousGifts').appendChild(newGiftEntry);
     updateDynamicTaxableAmount(); // 과세 금액 업데이트
 });
+
 // JavaScript 로드가 HTML 로드 이후에 이루어지도록 설정
 document.addEventListener('DOMContentLoaded', function () {
     // assetType 요소를 참조하고 Console에 출력
