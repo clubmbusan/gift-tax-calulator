@@ -83,6 +83,29 @@ function calculateLatePenalty(submissionDate, giftDate, giftTax) {
 
     return { penalty: giftTax * 0.2, message: "신고 기한 초과 (6개월 초과)" };
 }
+// 과세 금액 실시간 업데이트 함수
+function updateDynamicTaxableAmount() {
+    const giftAmount = parseCurrency(document.getElementById('cashAmount')?.value || '0'); // 현금 금액
+    const exemptionLimit = getExemptionAmount(document.getElementById('relationship').value); // 공제 한도
+
+    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('.amount-input');
+    let previousGiftTotal = 0;
+
+    previousGiftInputs.forEach(input => {
+        const value = parseCurrency(input.value || '0');
+        if (!isNaN(value)) {
+            previousGiftTotal += value; // 과거 증여 금액 합산
+        }
+    });
+
+    const adjustedExemption = Math.max(exemptionLimit - previousGiftTotal, 0); // 공제 한도 조정
+    const taxableAmount = Math.max(giftAmount - adjustedExemption, 0); // 과세 금액 계산
+
+    const taxableAmountSpan = document.getElementById('dynamicTaxableAmountValue');
+    if (taxableAmountSpan) {
+        taxableAmountSpan.textContent = taxableAmount.toLocaleString(); // 과세 금액 업데이트
+    }
+}
 
 // 과거 증여 금액 추가 버튼
 // 사용자가 버튼을 클릭하면 금액 및 날짜 입력 필드가 생성됩니다.
