@@ -173,7 +173,7 @@ document.getElementById('taxForm').onsubmit = function (e) {
     } else {
         giftAmount = 0; // 재산 유형이 선택되지 않은 경우
     }
-
+   
     // 관계별 공제 한도 계산
     const exemptionLimit = getExemptionAmount(relationship);
 
