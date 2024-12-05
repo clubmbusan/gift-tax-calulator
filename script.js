@@ -204,13 +204,25 @@ document.getElementById('taxForm').onsubmit = function (e) {
 };
 // 주식 총 금액 자동 계산
 document.getElementById('stockInputField').addEventListener('input', function () {
-    const stockQuantity = parseInt(document.getElementById('stockQuantity').value || '0', 10);
-    const stockPrice = parseCurrency(document.getElementById('stockPrice').value || '0');
-    
+    const stockQuantityInput = document.getElementById('stockQuantity');
+    const stockPriceInput = document.getElementById('stockPrice');
+    const stockTotalInput = document.getElementById('stockTotal');
+
+    // 매수량
+    const stockQuantity = parseInt(stockQuantityInput.value.replace(/,/g, '') || '0', 10);
+
+    // 주당 가격 (콤마 처리 및 숫자로 변환)
+    const stockPrice = parseCurrency(stockPriceInput.value || '0');
+
+    // 총 금액 계산
     const total = stockQuantity * stockPrice;
 
+    // 콤마 추가 및 표시
+    stockPriceInput.value = stockPrice.toLocaleString();
+    stockTotalInput.value = total.toLocaleString() + ' 원';
+
     // 계산된 총 금액을 stockTotal 필드에 표시
-    document.getElementById('stockTotal').value = total.toLocaleString() + ' 원';
+    stockTotalInput.value = total.toLocaleString() + ' 원';
 });
 
 // parseCurrency 함수 정의
