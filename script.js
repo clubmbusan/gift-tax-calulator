@@ -188,23 +188,44 @@ document.getElementById('taxForm').onsubmit = function (e) {
             previousGiftTotal += value; // 과거 증여 금액을 누적
         }
     });
-
-    const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
-    console.log('taxableAmount 확인:', taxableAmount); // 추가된 콘솔 로그
     
-    const giftTax = calculateGiftTax(taxableAmount);
-    console.log('giftTax 확인:', giftTax); // 추가된 콘솔 로그
-    
-    const giftDate = document.getElementById('giftDate').value;
-    const submissionDate = document.getElementById('submissionDate').value;
-    const { penalty: latePenalty, message: penaltyMessage } = calculateLatePenalty(submissionDate, giftDate, giftTax);
+  // 과세 금액 계산
+const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
+console.log('taxableAmount 확인:', taxableAmount); // 추가된 콘솔 로그
 
+// 과세 금액 표시 업데이트 추가
+const taxableAmountDiv = document.getElementById('taxableAmountDisplay');
+if (!taxableAmountDiv) {
+    // 과세 금액 표시 영역 생성
     const resultDiv = document.getElementById('result');
-    resultDiv.innerHTML = `
-        <p><strong>증여세:</strong> ${giftTax.toLocaleString()}원</p>
-        <p><strong>가산세:</strong> ${latePenalty.toLocaleString()}원 (${penaltyMessage})</p>
-        <p><strong>최종 납부세액:</strong> ${(giftTax + latePenalty).toLocaleString()}원</p>
-    `;
+    const newDiv = document.createElement('div');
+    newDiv.id = 'taxableAmountDisplay';
+    newDiv.innerHTML = `<p><strong>과세 금액:</strong> ${taxableAmount.toLocaleString()}원</p>`; 
+
+    resultDiv.prepend(newDiv); // 결과 영역 맨 위에 추가
+} else {
+    // 기존 과세 금액 영역 업데이트
+    taxableAmountDiv.innerHTML = `<p><strong>과세 금액:</strong> ${taxableAmount.toLocaleString()}원</p>`;
+}
+
+// 증여세 계산
+const giftTax = calculateGiftTax(taxableAmount);
+console.log('giftTax 확인:', giftTax); // 추가된 로그
+
+// 신고 날짜 관련 정보
+const giftDate = document.getElementById('giftDate').value;
+const submissionDate = document.getElementById('submissionDate').value;
+const { penalty: latePenalty, message: penaltyMessage } = calculateLatePenalty(submissionDate, giftDate, giftTax);
+console.log('가산세 확인:', latePenalty, penaltyMessage); // 추가된 로그
+
+// 결과 표시
+const resultDiv = document.getElementById('result');
+resultDiv.innerHTML = `
+    <p><strong>과세 금액:</strong> ${taxableAmount.toLocaleString()}원</p>
+    <p><strong>증여세:</strong> ${giftTax.toLocaleString()}원</p>
+    <p><strong>가산세:</strong> ${latePenalty.toLocaleString()}원 (${penaltyMessage})</p>
+    <p><strong>최종 납부세액:</strong> ${(giftTax + latePenalty).toLocaleString()}원</p>
+`;
 };
 // 주식 총 금액 자동 계산
 document.getElementById('stockInputField').addEventListener('input', function () {
