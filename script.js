@@ -202,6 +202,16 @@ document.getElementById('taxForm').onsubmit = function (e) {
         <p><strong>최종 납부세액:</strong> ${(giftTax + latePenalty).toLocaleString()}원</p>
     `;
 };
+// 주식 총 금액 자동 계산
+document.getElementById('stockInputField').addEventListener('input', function () {
+    const stockQuantity = parseInt(document.getElementById('stockQuantity').value || '0', 10);
+    const stockPrice = parseCurrency(document.getElementById('stockPrice').value || '0');
+    
+    const total = stockQuantity * stockPrice;
+
+    // 계산된 총 금액을 stockTotal 필드에 표시
+    document.getElementById('stockTotal').value = total.toLocaleString() + ' 원';
+});
 
 // parseCurrency 함수 정의
 function parseCurrency(value) {
