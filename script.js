@@ -96,19 +96,24 @@ function calculateGiftTax(taxableAmount) {
     let tax = 0;
     let previousLimit = 0;
 
+    // 각 구간에 대해 세금 계산
     for (const bracket of taxBrackets) {
         if (taxableAmount > bracket.limit) {
+            // 현재 구간을 초과하면, 해당 구간의 한도까지 계산
             tax += (bracket.limit - previousLimit) * (bracket.rate / 100);
             previousLimit = bracket.limit;
         } else {
+            // 마지막 구간은 공제액을 차감한 세액 계산
             tax += (taxableAmount - previousLimit) * (bracket.rate / 100);
-            tax -= bracket.deduction;
+            tax -= bracket.deduction;  // 공제액 차감
             break;
         }
     }
 
-    return Math.max(tax, 0); // 음수 방지
+    // 계산된 세금이 음수일 수 있으므로 0을 반환
+    return Math.max(tax, 0);
 }
+
 // 최종 세금 계산 및 출력 함수
 function calculateFinalTax() {
     // 관계 입력 (select 요소에서 값 가져오기)
