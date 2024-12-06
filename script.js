@@ -87,7 +87,21 @@ function calculateTaxableAmountAndExemption(relationship, giftAmount, previousGi
     return { adjustedExemption, taxableAmount };
 }
 
+function getPreviousGifts() {
+    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('.amount-input');
+    const previousGiftDates = document.getElementById('previousGifts').querySelectorAll('input[type="date"]');
+    let previousGifts = [];
 
+    previousGiftInputs.forEach((input, index) => {
+        const amount = parseCurrency(input.value || '0');
+        const date = previousGiftDates[index]?.value || null;
+        if (!isNaN(amount) && date) {
+            previousGifts.push({ amount, date });
+        }
+    });
+
+    return previousGifts;
+}
 
 // 증여세 계산 로직
 // 누진세율에 따라 증여세를 계산합니다.
