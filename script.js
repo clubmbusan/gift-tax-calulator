@@ -113,10 +113,19 @@ function calculateGiftTax(taxableAmount) {
 function calculateFinalTax() {
     // 관계 입력 (select 요소에서 값 가져오기)
     const relationshipSelect = document.getElementById('relationship');
-    const relationship = relationshipSelect ? relationshipSelect.value : 'adultChild'; // 기본값 'adultChild'
+    if (!relationshipSelect) {
+        console.error('관계 선택 요소를 찾을 수 없습니다.');
+        return;
+    }
+    const relationship = relationshipSelect.value;
 
     // 사용자가 입력한 금액을 가져옵니다.
-    const giftAmount = parseCurrency(document.querySelector('.amount-input').value || '0');
+    const amountInput = document.querySelector('.amount-input');
+    if (!amountInput) {
+        console.error('금액 입력 요소를 찾을 수 없습니다.');
+        return;
+    }
+    const giftAmount = parseCurrency(amountInput.value || '0');
 
     // 과거 증여 내역을 가져옵니다.
     const previousGifts = getPreviousGifts();
@@ -129,12 +138,23 @@ function calculateFinalTax() {
     const finalTax = giftTax;
 
     // 결과 출력 (최종 세액)
-    document.getElementById('finalTax').innerText = `최종 납부세액: ${finalTax.toLocaleString()} 원`;
+    const finalTaxElement = document.getElementById('finalTax');
+    if (!finalTaxElement) {
+        console.error('최종 세액 출력 요소를 찾을 수 없습니다.');
+        return;
+    }
+    finalTaxElement.innerText = `최종 납부세액: ${finalTax.toLocaleString()} 원`;
 
     // 세액 계산 과정 출력
     const taxBreakdownHTML = getTaxBreakdownHTML(giftAmount, taxableAmount, giftTax);
-    document.getElementById('taxBreakdown').innerHTML = taxBreakdownHTML;  // 세액 계산 과정을 'taxBreakdown' div에 출력
+    const taxBreakdownElement = document.getElementById('taxBreakdown');
+    if (!taxBreakdownElement) {
+        console.error('세액 계산 과정 출력 요소를 찾을 수 없습니다.');
+        return;
+    }
+    taxBreakdownElement.innerHTML = taxBreakdownHTML;
 }
+
 
 // 금액 포맷팅 함수
 function parseCurrency(value) {
