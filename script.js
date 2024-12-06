@@ -113,7 +113,15 @@ function calculateGiftTax(taxableAmount) {
     // 계산된 세금이 음수일 수 있으므로 0을 반환
     return Math.max(tax, 0);
 }
-
+// 세액 계산 과정 출력용 HTML 생성
+function getTaxBreakdownHTML(giftAmount, taxableAmount, giftTax) {
+    return `
+        <h3>세액 계산 과정</h3>
+        <p><strong>증여 금액:</strong> ${giftAmount.toLocaleString()} 원</p>
+        <p><strong>공제 후 과세 금액:</strong> ${taxableAmount.toLocaleString()} 원</p>
+        <p><strong>누진세 계산:</strong> ${giftTax.toLocaleString()} 원</p>
+    `;
+}
 // 최종 세금 계산 및 출력 함수
 function calculateFinalTax() {
     // 관계 입력 (select 요소에서 값 가져오기)
