@@ -41,13 +41,18 @@ document.addEventListener('input', function (e) {
 // 관계별 공제 한도 계산
 function getExemptionAmount(relationship) {
     const exemptions = {
-        'adultChild': 50000000,       // 성년 자녀 공제: 5천만 원
-        'minorChild': 20000000,       // 미성년 자녀 공제: 2천만 원
-        'spouse': 600000000,          // 배우자 공제: 6억 원
-        'sonInLawDaughterInLaw': 50000000, // 사위/며느리 공제: 5천만 원
-        'other': 1000000              // 타인 공제: 1천만 원
+        'adultChild': 50000000,       // 성년 자녀: 5천만 원
+        'minorChild': 20000000,       // 미성년 자녀: 2천만 원
+        'spouse': 600000000,          // 배우자: 6억 원
+        'sonInLawDaughterInLaw': 50000000, // 사위/며느리: 5천만 원
+        'other': 1000000              // 타인: 1천만 원
     };
-    return exemptions[relationship] || 0; // 관계가 정의되지 않으면 기본값 0 반환
+
+    if (!(relationship in exemptions)) {
+        throw new Error(`정의되지 않은 관계입니다: ${relationship}`);
+    }
+
+    return exemptions[relationship];
 }
 
 // 여기 아래에 추가합니다.
