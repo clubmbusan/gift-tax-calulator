@@ -55,52 +55,87 @@ function getExemptionAmount(relationship) {
     return exemptions[relationship];
 }
 
-// 여기 아래에 추가합니다.
+// 관계별 공제 금액 계산 함수
+// 과거 증여 데이터를 반영하여 조정된 공제 금액을 반환
 function calculateAdjustedExemption(relationship, previousGifts) {
-    const baseExemption = getExemptionAmount(relationship);
+    const baseExemption = getExemptionAmount(relationship); // 기본 공제액 가져오기
     const currentDate = new Date();
 
     let adjustedExemption = baseExemption;
 
+    // 과거 증여 데이터가 없는 경우
+    if (!Array.isArray(previousGifts) || previousGifts.length === 0) {
+        console.log(`과거 증여 데이터가 없습니다. 기본 공제액 반환: ${baseExemption}`);
+        return baseExemption; // 과거 증여가 없으면 기본 공제액 반환
+    }
+
+    // 과거 증여 데이터를 기준으로 공제액 차감
     previousGifts.forEach(gift => {
         const giftDate = new Date(gift.date);
+        if (isNaN(giftDate)) { // 날짜 형식이 잘못된 경우
+            console.warn(`잘못된 날짜 형식입니다: ${gift.date}`);
+            return;
+        }
+
+        // 과거 증여 날짜와 현재 날짜의 차이 계산
         const yearsDifference = (currentDate - giftDate) / (1000 * 60 * 60 * 24 * 365);
 
+        // 관계에 따른 차감 조건 적용
         if (
             (relationship === 'adultChild' && yearsDifference <= 10) ||
             (relationship === 'minorChild' && yearsDifference <= 10) ||
-            (relationship === 'sonInLawDaughterInLaw' && yearsDifference <= 5) ||
-            (relationship === 'spouse' && yearsDifference <= 10) ||
-            (relationship === 'other' && yearsDifference <= 10)
+            (relationship === 'sonInLawDaughterInLaw' && yearsDifference <= 5) || // 사위/며느리: 5년
+            (relationship === 'spouse' && yearsDifference <= 10) || // 배우자: 10년
+            (relationship === 'other' && yearsDifference <= 10) // 타인: 10년
         ) {
+            console.log(`과거 증여 차감: ${gift.amount}원`);
             adjustedExemption -= gift.amount;
         }
     });
 
+    console.log(`조정된 공제액: ${Math.max(adjustedExemption, 0)}원`);
     return Math.max(adjustedExemption, 0); // 음수 방지
 }
 
-// 새 함수 추가: 공제 및 과세 금액 계산 함수
+// 공제 및 과세 금액 계산 함수
+// 조정된 공제 금액과 과세 금액을 반환
 function calculateTaxableAmountAndExemption(relationship, giftAmount, previousGifts) {
+    if (giftAmount <= 0) { // 증여 금액이 0 이하인 경우
+        console.warn(`증여 금액이 0 이하입니다: ${giftAmount}`);
+        return { adjustedExemption: 0, taxableAmount: 0 };
+    }
+
+    // 공제액과 과세 금액 계산
     const adjustedExemption = calculateAdjustedExemption(relationship, previousGifts);
     const taxableAmount = Math.max(giftAmount - adjustedExemption, 0);
+
+    console.log(`과세 금액 계산 완료: 과세 금액 = ${taxableAmount}원, 공제액 = ${adjustedExemption}원`);
     return { adjustedExemption, taxableAmount };
 }
 
+// 과거 증여 데이터 수집 함수
+// 입력된 과거 증여 금액과 날짜 데이터를 배열 형태로 반환
 function getPreviousGifts() {
     const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('.amount-input');
     const previousGiftDates = document.getElementById('previousGifts').querySelectorAll('input[type="date"]');
     let previousGifts = [];
 
+    // 각 입력 필드에서 데이터를 추출
     previousGiftInputs.forEach((input, index) => {
-        const amount = parseCurrency(input.value || '0');
-        const date = previousGiftDates[index]?.value || null;
-        if (!isNaN(amount) && date) {
-            previousGifts.push({ amount, date });
+        const amount = parseCurrency(input.value || '0'); // 금액 변환
+        const date = previousGiftDates[index]?.value || null; // 날짜 가져오기
+
+        if (isNaN(amount) || !date) { // 입력이 유효하지 않을 경우
+            console.warn(`유효하지 않은 입력: 금액 = ${amount}, 날짜 = ${date}`);
+            return;
         }
+
+        // 유효한 데이터를 배열에 추가
+        previousGifts.push({ amount, date });
     });
 
-    return previousGifts;
+    console.log('과거 증여 데이터:', previousGifts); // 디버깅용 출력
+    return previousGifts; // 과거 증여 데이터를 반환
 }
 
 // 증여세 계산 로직
