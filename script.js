@@ -58,42 +58,40 @@ function getExemptionAmount(relationship) {
 // 관계별 공제 금액 계산 함수
 // 과거 증여 데이터를 반영하여 조정된 공제 금액을 반환
 function calculateAdjustedExemption(relationship, previousGifts) {
-    const baseExemption = getExemptionAmount(relationship); // 기본 공제액 가져오기
+    const baseExemption = getExemptionAmount(relationship); // 기본 공제액
     const currentDate = new Date();
-
     let adjustedExemption = baseExemption;
 
-    // 과거 증여 데이터가 없는 경우
+    // 과거 증여 데이터가 없는 경우 기본 공제 반환
     if (!Array.isArray(previousGifts) || previousGifts.length === 0) {
-        console.log(`과거 증여 데이터가 없습니다. 기본 공제액 반환: ${baseExemption}`);
-        return baseExemption; // 과거 증여가 없으면 기본 공제액 반환
+        console.warn(`과거 증여 데이터가 없습니다. 기본 공제액 반환: ${baseExemption}`);
+        return baseExemption;
     }
 
-    // 과거 증여 데이터를 기준으로 공제액 차감
+    // 과거 증여 데이터 처리
     previousGifts.forEach(gift => {
         const giftDate = new Date(gift.date);
-        if (isNaN(giftDate)) { // 날짜 형식이 잘못된 경우
-            console.warn(`잘못된 날짜 형식입니다: ${gift.date}`);
-            return;
+        if (isNaN(giftDate)) {
+            console.warn(`잘못된 날짜 형식: ${gift.date}`);
+            return; // 잘못된 날짜 무시
         }
 
         // 과거 증여 날짜와 현재 날짜의 차이 계산
         const yearsDifference = (currentDate - giftDate) / (1000 * 60 * 60 * 24 * 365);
 
-        // 관계에 따른 차감 조건 적용
+        // 관계별 조건에 따라 공제 차감
         if (
-            (relationship === 'adultChild' && yearsDifference <= 10) ||
-            (relationship === 'minorChild' && yearsDifference <= 10) ||
-            (relationship === 'sonInLawDaughterInLaw' && yearsDifference <= 5) || // 사위/며느리: 5년
-            (relationship === 'spouse' && yearsDifference <= 10) || // 배우자: 10년
-            (relationship === 'other' && yearsDifference <= 10) // 타인: 10년
+            (relationship === 'adultChild' && yearsDifference <= 10) || 
+            (relationship === 'minorChild' && yearsDifference <= 10) || 
+            (relationship === 'sonInLawDaughterInLaw' && yearsDifference <= 5) || 
+            (relationship === 'spouse' && yearsDifference <= 10) || 
+            (relationship === 'other' && yearsDifference <= 10)
         ) {
-            console.log(`과거 증여 차감: ${gift.amount}원`);
+            console.log(`과거 증여 차감 금액: ${gift.amount}원`);
             adjustedExemption -= gift.amount;
         }
     });
 
-    console.log(`조정된 공제액: ${Math.max(adjustedExemption, 0)}원`);
     return Math.max(adjustedExemption, 0); // 음수 방지
 }
 
@@ -144,25 +142,22 @@ function calculateGiftTax(taxableAmount) {
     let tax = 0;
     let previousLimit = 0;
 
-    for (let i = 0; i < taxBrackets.length; i++) {
-        const bracket = taxBrackets[i];
-
+    for (const bracket of taxBrackets) {
         if (taxableAmount > bracket.limit) {
+            // 현재 구간의 세금 계산
             tax += (bracket.limit - previousLimit) * (bracket.rate / 100);
             previousLimit = bracket.limit;
         } else {
+            // 마지막 구간의 세금 계산
             tax += (taxableAmount - previousLimit) * (bracket.rate / 100);
-
-            // 공제액은 해당 구간에서만 적용
-            if (taxableAmount <= bracket.limit) {
-                tax -= bracket.deduction;
-            }
+            tax -= bracket.deduction; // 마지막 구간에서만 공제 적용
             break;
         }
     }
 
     return Math.max(tax, 0); // 음수 방지
 }
+
 
 // 가산세 계산 로직
 // 신고 기한을 초과한 경우 가산세를 계산합니다.
