@@ -224,35 +224,42 @@ function updateDynamicTaxableAmount() {
         taxableAmountInput.value = taxableAmount.toLocaleString(); // 과세 금액 업데이트
     }
 }
+
 // 과거 증여 금액 추가 버튼
 document.getElementById('addGiftButton').addEventListener('click', function () {
     const container = document.getElementById('previousGifts');
     const newGiftEntry = document.createElement('div');
-    newGiftEntry.style.marginBottom = '10px';
+    newGiftEntry.className = 'gift-entry'; // 클래스명 추가로 스타일 관리 가능
     newGiftEntry.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <input type="text" name="pastGiftAmount" placeholder="금액 입력" class="amount-input" style="flex: 2; padding: 5px; border: 1px solid #ddd; border-radius: 5px; height: 40px;">
-            <input type="date" name="pastGiftDate" style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 5px; height: 40px;">
-            <button type="button" class="removeGiftButton" style="background-color: #f44336; color: white; border: none; padding: 0 10px; cursor: pointer; border-radius: 5px; height: 40px; line-height: 40px; text-align: center; width: auto;">삭제</button>
+        <div class="gift-fields">
+            <input type="text" name="pastGiftAmount" placeholder="금액 입력" class="amount-input">
+            <input type="date" name="pastGiftDate" class="date-input">
+            <button type="button" class="remove-gift-button">삭제</button>
         </div>
     `;
 
     // 삭제 버튼 동작 추가
-    newGiftEntry.querySelector('.removeGiftButton').addEventListener('click', function () {
+    const removeButton = newGiftEntry.querySelector('.remove-gift-button');
+    removeButton.addEventListener('click', function () {
         container.removeChild(newGiftEntry);
         updateDynamicTaxableAmount(); // 과세 금액 업데이트
     });
 
-    newGiftEntry.querySelector('.amount-input').addEventListener('input', function (e) {
-        const value = e.target.value.replace(/,/g, '');
+    // 입력 필드 이벤트 추가
+    const amountInput = newGiftEntry.querySelector('.amount-input');
+    amountInput.addEventListener('input', function () {
+        const value = amountInput.value.replace(/,/g, '');
         if (!isNaN(value)) {
-            e.target.value = Number(value).toLocaleString();
+            amountInput.value = Number(value).toLocaleString(); // 콤마 추가
         }
         updateDynamicTaxableAmount(); // 과세 금액 업데이트
     });
 
+    // 새 항목 추가
     container.appendChild(newGiftEntry);
-    updateDynamicTaxableAmount(); // 과세 금액 업데이트
+
+    // 초기 계산 업데이트 호출
+    updateDynamicTaxableAmount(); 
 });
 
 // JavaScript 로드가 HTML 로드 이후에 이루어지도록 설정
