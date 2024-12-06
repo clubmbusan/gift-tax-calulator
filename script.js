@@ -218,17 +218,15 @@ function updateDynamicTaxableAmount() {
     }
 }
 
-// 과거 증여 금액 추가 버튼
+// 과거 증여 금액 추가 버튼 동작
 document.getElementById('addGiftButton').addEventListener('click', function () {
-    const container = document.getElementById('previousGifts');
+    const container = document.getElementById('previousGifts'); // 과거 증여 입력 컨테이너
     const newGiftEntry = document.createElement('div');
-    newGiftEntry.className = 'gift-entry'; // 클래스명 추가로 스타일 관리 가능
+    newGiftEntry.className = 'gift-entry'; // 스타일 적용 가능
     newGiftEntry.innerHTML = `
-        <div class="gift-fields">
-            <input type="text" name="pastGiftAmount" placeholder="금액 입력" class="amount-input">
-            <input type="date" name="pastGiftDate" class="date-input">
-            <button type="button" class="remove-gift-button">삭제</button>
-        </div>
+        <input type="text" name="pastGiftAmount" placeholder="금액 입력 (원)" class="amount-input">
+        <input type="date" name="pastGiftDate" class="date-input">
+        <button type="button" class="remove-gift-button" style="background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px;">삭제</button>
     `;
 
     // 삭제 버튼 동작 추가
@@ -238,7 +236,7 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
         updateDynamicTaxableAmount(); // 과세 금액 업데이트
     });
 
-    // 입력 필드 이벤트 추가
+    // 금액 입력 필드 이벤트 추가 (콤마 추가)
     const amountInput = newGiftEntry.querySelector('.amount-input');
     amountInput.addEventListener('input', function () {
         const value = amountInput.value.replace(/,/g, '');
@@ -251,8 +249,8 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
     // 새 항목 추가
     container.appendChild(newGiftEntry);
 
-    // 초기 계산 업데이트 호출
-    updateDynamicTaxableAmount(); 
+    // 과세 금액 초기 업데이트
+    updateDynamicTaxableAmount();
 });
 
 // JavaScript 로드가 HTML 로드 이후에 이루어지도록 설정
