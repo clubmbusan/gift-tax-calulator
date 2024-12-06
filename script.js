@@ -222,14 +222,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// 계산 및 결과 표시
-// 사용자 입력 데이터를 바탕으로 최종 결과를 계산하고 표시합니다.
+// 계산하기 버튼 클릭 이벤트 추가
 document.getElementById('calculateButton').addEventListener('click', function () {
+    // [버튼 상태 변경] 버튼을 하늘색으로 변경하여 정답 확인 중이라는 느낌을 줌
+    const calculateButton = document.getElementById('calculateButton');
+    calculateButton.style.backgroundColor = '#87CEEB'; // 하늘색으로 변경
+    calculateButton.style.color = 'white'; // 버튼 텍스트 색상 흰색으로 설정
+    calculateButton.textContent = '결과 확인 중...'; // 버튼 텍스트를 "결과 확인 중..."으로 변경
+
+    // [계산 로직 시작] 사용자가 입력한 데이터를 기반으로 계산을 시작합니다.
     const selectedType = document.getElementById('assetType').value; // 재산 유형 선택
     const relationship = document.getElementById('relationship').value; // 증여 관계
     let giftAmount = 0;
 
-    // 재산 유형에 따른 금액 계산
+    // [재산 유형에 따른 금액 계산] 현금, 부동산, 주식에 따라 증여 금액 계산
     if (selectedType === 'cash') {
         giftAmount = parseCurrency(document.getElementById('cashAmount').value || '0');
     } else if (selectedType === 'realEstate') {
@@ -240,33 +246,28 @@ document.getElementById('calculateButton').addEventListener('click', function ()
         giftAmount = stockQuantity * stockPrice;
     }
 
-    // 관계별 공제 한도 계산
-    const exemptionLimit = getExemptionAmount(relationship);
-
-    // 과거 증여 금액 합산
+    // [공제 금액 계산] 관계 공제 및 과거 증여 금액 반영
+    const exemptionLimit = getExemptionAmount(relationship); // 관계별 공제 한도 계산
     const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('.amount-input');
     let previousGiftTotal = 0;
 
     previousGiftInputs.forEach(input => {
         const value = parseCurrency(input.value || '0');
-        if (!isNaN(value)) {
-            previousGiftTotal += value;
-        }
+        previousGiftTotal += value;
     });
 
-    // 공제 금액 적용 및 과세 금액 계산
-    const adjustedExemption = Math.max(exemptionLimit - previousGiftTotal, 0);
-    const taxableAmount = Math.max(giftAmount - adjustedExemption, 0);
+    const adjustedExemption = Math.max(exemptionLimit - previousGiftTotal, 0); // 조정된 공제 한도
+    const taxableAmount = Math.max(giftAmount - adjustedExemption, 0); // 과세 금액 계산
 
-    // 증여세 계산
+    // [증여세 계산]
     const giftTax = calculateGiftTax(taxableAmount);
 
-    // 가산세 계산
+    // [가산세 계산]
     const giftDate = document.getElementById('giftDate').value;
     const submissionDate = document.getElementById('submissionDate').value;
     const { penalty: latePenalty, message: penaltyMessage } = calculateLatePenalty(submissionDate, giftDate, giftTax);
 
-    // 결과 및 계산 과정 출력
+    // [결과 출력] 계산 과정 및 결과를 화면에 출력
     const resultDiv = document.getElementById('result');
     resultDiv.innerHTML = `
         <h3>계산 과정</h3>
