@@ -245,7 +245,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // 계산하기 버튼 클릭 이벤트 추가
 document.getElementById('calculateButton').addEventListener('click', function () {
-    // [버튼 색상 변경] 계산 버튼을 하늘색으로 변경
     const calculateButton = document.getElementById('calculateButton');
     calculateButton.style.backgroundColor = '#87CEEB'; // 하늘색
     calculateButton.style.color = 'white'; // 버튼 텍스트 색상 유지
@@ -267,18 +266,9 @@ document.getElementById('calculateButton').addEventListener('click', function ()
         giftAmount = stockQuantity * stockPrice;
     }
 
-    // [공제 금액 계산] 관계 공제 및 과거 증여 금액 반영
-    const exemptionLimit = getExemptionAmount(relationship); // 관계별 공제 한도 계산
-    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('.amount-input');
-    let previousGiftTotal = 0;
-
-    previousGiftInputs.forEach(input => {
-        const value = parseCurrency(input.value || '0');
-        previousGiftTotal += value;
-    });
-
-    const adjustedExemption = Math.max(exemptionLimit - previousGiftTotal, 0); // 조정된 공제 한도
-    const taxableAmount = Math.max(giftAmount - adjustedExemption, 0); // 과세 금액 계산
+    // [공제 금액 및 과세 금액 계산]
+    const previousGifts = getPreviousGifts(); // 과거 증여 데이터를 배열로 가져오는 함수
+    const { adjustedExemption, taxableAmount } = calculateTaxableAmountAndExemption(relationship, giftAmount, previousGifts);
 
     // [증여세 계산]
     const giftTax = calculateGiftTax(taxableAmount);
@@ -293,7 +283,7 @@ document.getElementById('calculateButton').addEventListener('click', function ()
     resultDiv.innerHTML = `
         <h3>계산 과정</h3>
         <p><strong>입력된 증여 금액:</strong> ${giftAmount.toLocaleString()}원</p>
-        <p><strong>공제 금액:</strong> ${adjustedExemption.toLocaleString()}원 (관계 공제: ${exemptionLimit.toLocaleString()}원, 과거 증여 차감: ${previousGiftTotal.toLocaleString()}원)</p>
+        <p><strong>공제 금액:</strong> ${adjustedExemption.toLocaleString()}원</p>
         <p><strong>과세 금액:</strong> ${taxableAmount.toLocaleString()}원</p>
         <p><strong>증여세 계산:</strong> ${giftTax.toLocaleString()}원</p>
         <p><strong>가산세 계산:</strong> ${latePenalty.toLocaleString()}원 (${penaltyMessage})</p>
