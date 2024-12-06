@@ -46,119 +46,55 @@ function getExemptionAmount(relationship) {
         'other': 10000000              // 타인: 1천만 원
     };
 
-    // 정의되지 않은 관계 처리
-    if (!(relationship in exemptions)) {
-        console.warn(`정의되지 않은 관계입니다: ${relationship}. 기본 공제액 0원 반환.`);
-        return 0; // 기본값 반환
-    }
-
-    return exemptions[relationship];
+    return exemptions[relationship] || 0; // 기본값 반환
 }
-
-// 관계별 공제 금액 계산 함수
-// 과거 증여 데이터를 반영하여 조정된 공제 금액을 반환
-function calculateAdjustedExemption(relationship, previousGifts) {
-    const baseExemption = getExemptionAmount(relationship); // 기본 공제액
-    const currentDate = new Date();
-    let adjustedExemption = baseExemption;
-
-    // 과거 증여 데이터가 없는 경우
-    if (!Array.isArray(previousGifts) || previousGifts.length === 0) {
-        console.warn(`[DEBUG] 과거 증여 데이터 없음. 기본 공제액 반환: ${baseExemption}`);
-        return baseExemption;
-    }
-
-    // 과거 증여 데이터 처리
-    previousGifts.forEach(gift => {
-        const giftDate = new Date(gift.date);
-        if (isNaN(giftDate)) {
-            console.warn(`[ERROR] 잘못된 날짜 형식: ${gift.date}`);
-            return;
-        }
-
-        // 날짜 차이 계산
-        const yearsDifference = (currentDate - giftDate) / (1000 * 60 * 60 * 24 * 365);
-        console.log(`[INFO] 증여일: ${gift.date}, 현재와의 차이: ${yearsDifference}년`);
-
-        // 관계별 공제 차감 조건
-        if (
-            (relationship === 'adultChild' && yearsDifference <= 10) || 
-            (relationship === 'minorChild' && yearsDifference <= 10) || 
-            (relationship === 'sonInLawDaughterInLaw' && yearsDifference <= 5) || 
-            (relationship === 'spouse' && yearsDifference <= 10) || 
-            (relationship === 'other' && yearsDifference <= 10)
-        ) {
-            console.log(`[DEBUG] 관계: ${relationship}, 차감 금액: ${gift.amount}`);
-            adjustedExemption -= gift.amount;
-        }
-    });
-
-    console.log(`[RESULT] 조정된 공제액: ${Math.max(adjustedExemption, 0)}`);
-    return Math.max(adjustedExemption, 0); // 음수 방지
-}
-
 
 // 공제 및 과세 금액 계산 함수
-// 조정된 공제 금액과 과세 금액을 반환
 function calculateTaxableAmountAndExemption(relationship, giftAmount, previousGifts) {
-    if (giftAmount <= 0) { // 증여 금액이 0 이하인 경우
-        console.warn(`증여 금액이 0 이하입니다: ${giftAmount}`);
-        return { adjustedExemption: 0, taxableAmount: 0 };
-    }
+    if (giftAmount <= 0) return { adjustedExemption: 0, taxableAmount: 0 };
 
-    // 공제액과 과세 금액 계산
     const adjustedExemption = calculateAdjustedExemption(relationship, previousGifts);
     const taxableAmount = Math.max(giftAmount - adjustedExemption, 0);
 
-    console.log(`과세 금액 계산 완료: 과세 금액 = ${taxableAmount}원, 공제액 = ${adjustedExemption}원`);
     return { adjustedExemption, taxableAmount };
 }
 
 // 과거 증여 데이터 수집 함수
-// 입력된 과거 증여 금액과 날짜 데이터를 배열 형태로 반환
 function getPreviousGifts() {
     const previousGiftInputs = document.querySelectorAll('.amount-input');
     const previousGiftDates = document.querySelectorAll('.date-input');
     let previousGifts = [];
 
     previousGiftInputs.forEach((input, index) => {
-        const amount = parseCurrency(input.value || '0'); // 금액 입력
-        const date = previousGiftDates[index]?.value || null; // 날짜 입력
+        const amount = parseCurrency(input.value || '0');
+        const date = previousGiftDates[index]?.value || null;
 
-        // 금액과 날짜가 모두 유효한 경우에만 추가
         if (amount > 0 && date) {
             previousGifts.push({ amount, date });
-        } else {
-            console.warn(`유효하지 않은 입력: 금액 = ${amount}, 날짜 = ${date}`);
         }
     });
 
-    console.log('[DEBUG] 과거 증여 데이터:', previousGifts); // 확인용 디버그 로그
     return previousGifts;
 }
 
-// 증여세 계산 로직
-// 누진세율에 따라 증여세를 계산합니다.
+// 누진세 계산
 function calculateGiftTax(taxableAmount) {
     let tax = 0;
     let previousLimit = 0;
 
     for (const bracket of taxBrackets) {
         if (taxableAmount > bracket.limit) {
-            // 현재 구간의 세금 계산
             tax += (bracket.limit - previousLimit) * (bracket.rate / 100);
             previousLimit = bracket.limit;
         } else {
-            // 마지막 구간의 세금 계산
             tax += (taxableAmount - previousLimit) * (bracket.rate / 100);
-            tax -= bracket.deduction; // 마지막 구간에서만 공제 적용
+            tax -= bracket.deduction;
             break;
         }
     }
 
     return Math.max(tax, 0); // 음수 방지
 }
-
 
 // 가산세 계산 로직
 // 신고 기한을 초과한 경우 가산세를 계산합니다.
