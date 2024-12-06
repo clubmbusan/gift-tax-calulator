@@ -224,57 +224,62 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // 계산 및 결과 표시
 // 사용자 입력 데이터를 바탕으로 최종 결과를 계산하고 표시합니다.
-document.getElementById('taxForm').onsubmit = function (e) {
-    e.preventDefault();
-
+document.getElementById('calculateButton').addEventListener('click', function () {
     const selectedType = document.getElementById('assetType').value; // 재산 유형 선택
     const relationship = document.getElementById('relationship').value; // 증여 관계
     let giftAmount = 0;
 
     // 재산 유형에 따른 금액 계산
     if (selectedType === 'cash') {
-        // 현금 유형: 사용자가 입력한 현금 금액
         giftAmount = parseCurrency(document.getElementById('cashAmount').value || '0');
     } else if (selectedType === 'realEstate') {
-        // 부동산 유형: 사용자가 입력한 부동산 평가액
         giftAmount = parseCurrency(document.getElementById('realEstateValue').value || '0');
     } else if (selectedType === 'stock') {
-        // 주식 유형: 주식 수량과 주식 1주당 가격을 곱한 금액
         const stockQuantity = parseInt(document.getElementById('stockQuantity').value || '0', 10);
         const stockPrice = parseCurrency(document.getElementById('stockPrice').value || '0');
         giftAmount = stockQuantity * stockPrice;
-    } else {
-        giftAmount = 0; // 재산 유형이 선택되지 않은 경우
     }
-   
+
     // 관계별 공제 한도 계산
     const exemptionLimit = getExemptionAmount(relationship);
 
- // 과거 증여 금액 합산
-const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('input');
-let previousGiftTotal = 0;
+    // 과거 증여 금액 합산
+    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('.amount-input');
+    let previousGiftTotal = 0;
 
-previousGiftInputs.forEach(input => {
-    const value = parseCurrency(input.value || '0');
-    if (!isNaN(value)) {
-        previousGiftTotal += value; // 과거 증여 금액을 누적
-    }
-});
+    previousGiftInputs.forEach(input => {
+        const value = parseCurrency(input.value || '0');
+        if (!isNaN(value)) {
+            previousGiftTotal += value;
+        }
+    });
 
-    const taxableAmount = Math.max(giftAmount - exemptionLimit - previousGiftTotal, 0);
+    // 공제 금액 적용 및 과세 금액 계산
+    const adjustedExemption = Math.max(exemptionLimit - previousGiftTotal, 0);
+    const taxableAmount = Math.max(giftAmount - adjustedExemption, 0);
+
+    // 증여세 계산
     const giftTax = calculateGiftTax(taxableAmount);
 
+    // 가산세 계산
     const giftDate = document.getElementById('giftDate').value;
     const submissionDate = document.getElementById('submissionDate').value;
     const { penalty: latePenalty, message: penaltyMessage } = calculateLatePenalty(submissionDate, giftDate, giftTax);
 
+    // 결과 및 계산 과정 출력
     const resultDiv = document.getElementById('result');
     resultDiv.innerHTML = `
-        <p><strong>증여세:</strong> ${giftTax.toLocaleString()}원</p>
-        <p><strong>가산세:</strong> ${latePenalty.toLocaleString()}원 (${penaltyMessage})</p>
+        <h3>계산 과정</h3>
+        <p><strong>입력된 증여 금액:</strong> ${giftAmount.toLocaleString()}원</p>
+        <p><strong>공제 금액:</strong> ${adjustedExemption.toLocaleString()}원 (관계 공제: ${exemptionLimit.toLocaleString()}원, 과거 증여 차감: ${previousGiftTotal.toLocaleString()}원)</p>
+        <p><strong>과세 금액:</strong> ${taxableAmount.toLocaleString()}원</p>
+        <p><strong>증여세 계산:</strong> ${giftTax.toLocaleString()}원</p>
+        <p><strong>가산세 계산:</strong> ${latePenalty.toLocaleString()}원 (${penaltyMessage})</p>
+        <h3>최종 결과</h3>
         <p><strong>최종 납부세액:</strong> ${(giftTax + latePenalty).toLocaleString()}원</p>
     `;
-};
+});
+
 // 주식 총 금액 자동 계산
 document.getElementById('stockInputField').addEventListener('input', function () {
     const stockQuantityInput = document.getElementById('stockQuantity');
