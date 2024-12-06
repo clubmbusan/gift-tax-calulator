@@ -134,8 +134,12 @@ function calculateFinalTax() {
     const giftTax = calculateGiftTax(taxableAmount); // 누진세 계산
     const finalTax = giftTax;
 
-    // 결과 출력
+    // 결과 출력 (최종 세액)
     document.getElementById('finalTax').innerText = `최종 납부세액: ${finalTax.toLocaleString()} 원`;
+
+    // 세액 계산 과정 출력
+    const taxBreakdownHTML = getTaxBreakdownHTML(giftAmount, taxableAmount, giftTax);
+    document.getElementById('taxBreakdown').innerHTML = taxBreakdownHTML;  // 세액 계산 과정을 'taxBreakdown' div에 출력
 }
 
 // 금액 포맷팅 함수
