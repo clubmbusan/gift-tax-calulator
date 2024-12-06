@@ -67,18 +67,27 @@ function calculateAdjustedExemption(relationship, previousGifts) {
         const yearsDifference = (currentDate - giftDate) / (1000 * 60 * 60 * 24 * 365);
 
         if (
-            (relationship === 'adultChild' && yearsDifference <= 10) || 
-            (relationship === 'minorChild' && yearsDifference <= 10) || 
-            (relationship === 'sonInLawDaughterInLaw' && yearsDifference <= 5) || 
-            (relationship === 'spouse' && yearsDifference <= 10) || 
+            (relationship === 'adultChild' && yearsDifference <= 10) ||
+            (relationship === 'minorChild' && yearsDifference <= 10) ||
+            (relationship === 'sonInLawDaughterInLaw' && yearsDifference <= 5) ||
+            (relationship === 'spouse' && yearsDifference <= 10) ||
             (relationship === 'other' && yearsDifference <= 10)
         ) {
-            adjustedExemption -= gift.amount; // 과거 증여 금액 차감
+            adjustedExemption -= gift.amount;
         }
     });
 
     return Math.max(adjustedExemption, 0); // 음수 방지
 }
+
+// 새 함수 추가: 공제 및 과세 금액 계산 함수
+function calculateTaxableAmountAndExemption(relationship, giftAmount, previousGifts) {
+    const adjustedExemption = calculateAdjustedExemption(relationship, previousGifts);
+    const taxableAmount = Math.max(giftAmount - adjustedExemption, 0);
+    return { adjustedExemption, taxableAmount };
+}
+
+
 
 // 증여세 계산 로직
 // 누진세율에 따라 증여세를 계산합니다.
