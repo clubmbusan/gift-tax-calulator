@@ -224,11 +224,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // 계산하기 버튼 클릭 이벤트 추가
 document.getElementById('calculateButton').addEventListener('click', function () {
-    // [버튼 상태 변경] 버튼을 하늘색으로 변경하여 정답 확인 중이라는 느낌을 줌
+    // [버튼 색상 변경] 계산 버튼을 하늘색으로 변경
     const calculateButton = document.getElementById('calculateButton');
-    calculateButton.style.backgroundColor = '#87CEEB'; // 하늘색으로 변경
-    calculateButton.style.color = 'white'; // 버튼 텍스트 색상 흰색으로 설정
-    calculateButton.textContent = '결과 확인 중...'; // 버튼 텍스트를 "결과 확인 중..."으로 변경
+    calculateButton.style.backgroundColor = '#87CEEB'; // 하늘색
+    calculateButton.style.color = 'white'; // 버튼 텍스트 색상 유지
+    calculateButton.textContent = '계산하기'; // 텍스트는 항상 "계산하기"로 유지
 
     // [계산 로직 시작] 사용자가 입력한 데이터를 기반으로 계산을 시작합니다.
     const selectedType = document.getElementById('assetType').value; // 재산 유형 선택
