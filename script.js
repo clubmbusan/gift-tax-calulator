@@ -43,7 +43,7 @@ function getExemptionAmount(relationship) {
         'minorChild': 20000000,       // 미성년 자녀: 2천만 원
         'spouse': 600000000,          // 배우자: 6억 원
         'sonInLawDaughterInLaw': 50000000, // 사위/며느리: 5천만 원
-        'other': 1000000              // 타인: 1천만 원
+        'other': 10000000              // 타인: 1천만 원
     };
 
     // 정의되지 않은 관계 처리
