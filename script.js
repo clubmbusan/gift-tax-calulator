@@ -1,13 +1,15 @@
-// 증여세 누진세 계산 로직
-// 각 증여 금액 구간에 따른 세율 및 공제액을 정의합니다.
-const taxBrackets = [
-    { limit: 10000000, rate: 10, deduction: 0 },          // 1천만 원 이하 10%
-    { limit: 100000000, rate: 20, deduction: 10000000 },  // 1억 원 이하 20%
-    { limit: 500000000, rate: 30, deduction: 60000000 },  // 5억 원 이하 30%
-    { limit: 1000000000, rate: 40, deduction: 160000000 },// 10억 원 이하 40%
-    { limit: 3000000000, rate: 50, deduction: 460000000 },// 30억 원 이하 50%
-    { limit: Infinity, rate: 60, deduction: 960000000 }   // 30억 원 초과 60%
-];
+// 관계별 공제 한도 계산
+function getExemptionAmount(relationship) {
+    const exemptions = {
+        'adultChild': 50000000,       // 성년 자녀: 5천만 원
+        'minorChild': 20000000,       // 미성년 자녀: 2천만 원
+        'spouse': 600000000,          // 배우자: 6억 원
+        'sonInLawDaughterInLaw': 50000000, // 사위/며느리: 5천만 원
+        'other': 10000000              // 타인: 1천만 원
+    };
+
+    return exemptions[relationship] || 0; // 기본값 반환
+}
 
 // 금액 입력 시 콤마 처리
 // 사용자가 금액을 입력할 때 자동으로 콤마를 추가합니다.
@@ -35,19 +37,6 @@ document.addEventListener('input', function (e) {
         inputField.setSelectionRange(cursorPosition, cursorPosition);
     }
 });
-
-// 관계별 공제 한도 계산
-function getExemptionAmount(relationship) {
-    const exemptions = {
-        'adultChild': 50000000,       // 성년 자녀: 5천만 원
-        'minorChild': 20000000,       // 미성년 자녀: 2천만 원
-        'spouse': 600000000,          // 배우자: 6억 원
-        'sonInLawDaughterInLaw': 50000000, // 사위/며느리: 5천만 원
-        'other': 10000000              // 타인: 1천만 원
-    };
-
-    return exemptions[relationship] || 0; // 기본값 반환
-}
 
 // 공제 및 과세 금액 계산 함수
 function calculateTaxableAmountAndExemption(relationship, giftAmount, previousGifts) {
@@ -77,8 +66,33 @@ function getPreviousGifts() {
     return previousGifts;
 }
 
+// 과세 금액 계산 및 공제 계산 함수
+function calculateAdjustedExemption(relationship, previousGifts) {
+    const exemption = getExemptionAmount(relationship);
+
+    const pastGifts = previousGifts.filter(gift => {
+        const giftDate = new Date(gift.date);
+        const today = new Date();
+        return giftDate.getFullYear() === today.getFullYear();
+    });
+
+    const totalPastGifts = pastGifts.reduce((sum, gift) => sum + gift.amount, 0);
+    const adjustedExemption = exemption - totalPastGifts;
+
+    return Math.max(adjustedExemption, 0);
+}
+
 // 누진세 계산
 function calculateGiftTax(taxableAmount) {
+    const taxBrackets = [
+        { limit: 10000000, rate: 10, deduction: 0 },          // 1천만 원 이하 10%
+        { limit: 100000000, rate: 20, deduction: 10000000 },  // 1억 원 이하 20%
+        { limit: 500000000, rate: 30, deduction: 60000000 },  // 5억 원 이하 30%
+        { limit: 1000000000, rate: 40, deduction: 160000000 },// 10억 원 이하 40%
+        { limit: 3000000000, rate: 50, deduction: 460000000 },// 30억 원 이하 50%
+        { limit: Infinity, rate: 60, deduction: 960000000 }   // 30억 원 초과 60%
+    ];
+
     let tax = 0;
     let previousLimit = 0;
 
@@ -95,6 +109,29 @@ function calculateGiftTax(taxableAmount) {
 
     return Math.max(tax, 0); // 음수 방지
 }
+
+// 최종 세금 계산 및 출력 함수
+function calculateFinalTax() {
+    const relationship = document.querySelector('input[name="relationship"]:checked').value; // 관계 입력
+    const giftAmount = parseCurrency(document.querySelector('.amount-input').value || '0');
+    const previousGifts = getPreviousGifts();
+
+    const { adjustedExemption, taxableAmount } = calculateTaxableAmountAndExemption(relationship, giftAmount, previousGifts);
+
+    const giftTax = calculateGiftTax(taxableAmount); // 누진세 계산
+    const finalTax = giftTax;
+
+    // 결과 출력
+    document.getElementById('finalTax').innerText = `최종 납부세액: ${finalTax.toLocaleString()} 원`;
+}
+
+// 금액 포맷팅 함수
+function parseCurrency(value) {
+    return parseInt(value.replace(/[^0-9]/g, ''), 10);
+}
+
+// 증여세 계산 버튼에 이벤트 리스너 추가
+document.querySelector('#calculateButton').addEventListener('click', calculateFinalTax);
 
 // 가산세 계산 로직
 // 신고 기한을 초과한 경우 가산세를 계산합니다.
