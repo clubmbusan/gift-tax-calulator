@@ -62,9 +62,9 @@ function calculateAdjustedExemption(relationship, previousGifts) {
     const currentDate = new Date();
     let adjustedExemption = baseExemption;
 
-    // 과거 증여 데이터가 없는 경우 기본 공제 반환
+    // 과거 증여 데이터가 없는 경우
     if (!Array.isArray(previousGifts) || previousGifts.length === 0) {
-        console.warn(`과거 증여 데이터가 없습니다. 기본 공제액 반환: ${baseExemption}`);
+        console.warn(`[DEBUG] 과거 증여 데이터 없음. 기본 공제액 반환: ${baseExemption}`);
         return baseExemption;
     }
 
@@ -72,14 +72,15 @@ function calculateAdjustedExemption(relationship, previousGifts) {
     previousGifts.forEach(gift => {
         const giftDate = new Date(gift.date);
         if (isNaN(giftDate)) {
-            console.warn(`잘못된 날짜 형식: ${gift.date}`);
-            return; // 잘못된 날짜 무시
+            console.warn(`[ERROR] 잘못된 날짜 형식: ${gift.date}`);
+            return;
         }
 
-        // 과거 증여 날짜와 현재 날짜의 차이 계산
+        // 날짜 차이 계산
         const yearsDifference = (currentDate - giftDate) / (1000 * 60 * 60 * 24 * 365);
+        console.log(`[INFO] 증여일: ${gift.date}, 현재와의 차이: ${yearsDifference}년`);
 
-        // 관계별 조건에 따라 공제 차감
+        // 관계별 공제 차감 조건
         if (
             (relationship === 'adultChild' && yearsDifference <= 10) || 
             (relationship === 'minorChild' && yearsDifference <= 10) || 
@@ -87,13 +88,15 @@ function calculateAdjustedExemption(relationship, previousGifts) {
             (relationship === 'spouse' && yearsDifference <= 10) || 
             (relationship === 'other' && yearsDifference <= 10)
         ) {
-            console.log(`과거 증여 차감 금액: ${gift.amount}원`);
+            console.log(`[DEBUG] 관계: ${relationship}, 차감 금액: ${gift.amount}`);
             adjustedExemption -= gift.amount;
         }
     });
 
+    console.log(`[RESULT] 조정된 공제액: ${Math.max(adjustedExemption, 0)}`);
     return Math.max(adjustedExemption, 0); // 음수 방지
 }
+
 
 // 공제 및 과세 금액 계산 함수
 // 조정된 공제 금액과 과세 금액을 반환
