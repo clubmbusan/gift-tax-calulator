@@ -70,6 +70,47 @@ button#calculateButton {
 button#calculateButton:hover {
     background-color: #006400; /* 더 진한 녹색 */
 }
+/* 과거 증여 금액 필드 스타일 */
+.gift-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.amount-input {
+    flex: 2;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    height: 40px;
+}
+
+.date-input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    height: 40px;
+}
+
+.remove-gift-button {
+    flex: 0.5;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    height: 40px;
+    text-align: center;
+    line-height: 30px;
+}
+
+/* 삭제 버튼 호버 시 스타일 */
+.remove-gift-button:hover {
+    background-color: #d32f2f;
+}
 
 /* 상단 제목 크기 조정 */
 h1 {
