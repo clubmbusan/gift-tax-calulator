@@ -224,8 +224,7 @@ document.getElementById('addGiftButton').addEventListener('click', function () {
 document.addEventListener('DOMContentLoaded', function () {
     // assetType 요소를 참조하고 Console에 출력
     const assetType = document.getElementById('assetType');
-    console.log('assetType 참조 확인:', assetType); // assetType 요소 확인
-
+    
     if (!assetType) {
         console.error('assetType 요소를 찾을 수 없습니다.'); // 오류 메시지
         return; // assetType이 없으면 실행 중지
@@ -233,8 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 재산 유형 선택 시 입력 필드 변경
     assetType.addEventListener('change', function (e) {
-        console.log('재산 유형 선택 이벤트 호출됨:', e.target.value); // 선택된 값 확인
-
+       
         const selectedType = e.target.value;
 
         const cashField = document.getElementById('cashInputField');
