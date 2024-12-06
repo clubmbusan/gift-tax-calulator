@@ -36,8 +36,6 @@ document.addEventListener('input', function (e) {
     }
 });
 
-
-
 // 관계별 공제 한도 계산
 function getExemptionAmount(relationship) {
     const exemptions = {
@@ -48,8 +46,10 @@ function getExemptionAmount(relationship) {
         'other': 1000000              // 타인: 1천만 원
     };
 
+    // 정의되지 않은 관계 처리
     if (!(relationship in exemptions)) {
-        throw new Error(`정의되지 않은 관계입니다: ${relationship}`);
+        console.warn(`정의되지 않은 관계입니다: ${relationship}. 기본 공제액 0원 반환.`);
+        return 0; // 기본값 반환
     }
 
     return exemptions[relationship];
