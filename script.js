@@ -83,18 +83,20 @@ function calculateGiftTax(taxableAmount) {
         const bracket = taxBrackets[i];
 
         if (taxableAmount > bracket.limit) {
-            // 현재 구간까지의 세금 계산
             tax += (bracket.limit - previousLimit) * (bracket.rate / 100);
             previousLimit = bracket.limit;
         } else {
-            // 과세 금액이 현재 구간에 속하는 경우
             tax += (taxableAmount - previousLimit) * (bracket.rate / 100);
-            // 공제액은 과세 구간에 따라 마지막에만 차감
-            tax -= bracket.deduction; 
+
+            // 공제액은 해당 구간에서만 적용
+            if (taxableAmount <= bracket.limit) {
+                tax -= bracket.deduction;
+            }
             break;
         }
     }
-    return Math.max(tax, 0); // 세금이 음수로 나오지 않도록 처리
+
+    return Math.max(tax, 0); // 음수 방지
 }
 
 // 가산세 계산 로직
