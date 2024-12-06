@@ -116,8 +116,8 @@ function calculateTaxableAmountAndExemption(relationship, giftAmount, previousGi
 // 과거 증여 데이터 수집 함수
 // 입력된 과거 증여 금액과 날짜 데이터를 배열 형태로 반환
 function getPreviousGifts() {
-    const previousGiftInputs = document.getElementById('previousGifts').querySelectorAll('.amount-input');
-    const previousGiftDates = document.getElementById('previousGifts').querySelectorAll('input[type="date"]');
+    const previousGiftInputs = document.querySelectorAll('.amount-input'); // 금액 입력 필드
+    const previousGiftDates = document.querySelectorAll('.date-input');   // 날짜 입력 필드
     let previousGifts = [];
 
     // 각 입력 필드에서 데이터를 추출
@@ -125,18 +125,18 @@ function getPreviousGifts() {
         const amount = parseCurrency(input.value || '0'); // 금액 변환
         const date = previousGiftDates[index]?.value || null; // 날짜 가져오기
 
-        if (isNaN(amount) || !date) { // 입력이 유효하지 않을 경우
+        // 유효성 검사: 금액과 날짜가 모두 있어야 추가
+        if (amount > 0 && date) {
+            previousGifts.push({ amount, date }); // 유효한 데이터를 배열에 추가
+        } else {
             console.warn(`유효하지 않은 입력: 금액 = ${amount}, 날짜 = ${date}`);
-            return;
         }
-
-        // 유효한 데이터를 배열에 추가
-        previousGifts.push({ amount, date });
     });
 
     console.log('과거 증여 데이터:', previousGifts); // 디버깅용 출력
-    return previousGifts; // 과거 증여 데이터를 반환
+    return previousGifts; // 유효한 과거 증여 데이터를 반환
 }
+
 
 // 증여세 계산 로직
 // 누진세율에 따라 증여세를 계산합니다.
