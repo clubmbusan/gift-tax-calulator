@@ -109,15 +109,22 @@ function calculateGiftTax(taxableAmount) {
 
     return Math.max(tax, 0); // 음수 방지
 }
-
 // 최종 세금 계산 및 출력 함수
 function calculateFinalTax() {
-    const relationship = document.querySelector('input[name="relationship"]:checked').value; // 관계 입력
+    // 관계 입력 (select 요소에서 값 가져오기)
+    const relationshipSelect = document.getElementById('relationship');
+    const relationship = relationshipSelect ? relationshipSelect.value : 'adultChild'; // 기본값 'adultChild'
+
+    // 사용자가 입력한 금액을 가져옵니다.
     const giftAmount = parseCurrency(document.querySelector('.amount-input').value || '0');
+
+    // 과거 증여 내역을 가져옵니다.
     const previousGifts = getPreviousGifts();
 
+    // 공제 및 과세 금액 계산
     const { adjustedExemption, taxableAmount } = calculateTaxableAmountAndExemption(relationship, giftAmount, previousGifts);
 
+    // 누진세 계산
     const giftTax = calculateGiftTax(taxableAmount); // 누진세 계산
     const finalTax = giftTax;
 
