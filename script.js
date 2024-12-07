@@ -13,6 +13,39 @@ document.addEventListener('input', function (event) {
         target.value = parseInt(rawValue, 10).toLocaleString(); // 숫자에 콤마 추가
     }
 });
+
+// 2. 재산 유형 선택 이벤트 리스너 추가
+document.addEventListener('DOMContentLoaded', function () {
+    const assetType = document.getElementById('assetType'); // 재산 유형 select 요소
+    if (!assetType) {
+        console.error('재산 유형 선택 요소가 없습니다.');
+        return;
+    }
+
+    assetType.addEventListener('change', function (e) {
+        const selectedType = e.target.value; // 선택된 재산 유형
+
+        // 재산 유형별 입력 필드
+        const cashField = document.getElementById('cashInputField');
+        const realEstateField = document.getElementById('realEstateInputField');
+        const stockField = document.getElementById('stockInputField');
+
+        // 모든 필드를 숨김 처리
+        cashField.style.display = 'none';
+        realEstateField.style.display = 'none';
+        stockField.style.display = 'none';
+
+        // 선택된 유형에 따라 필드 표시
+        if (selectedType === 'cash') {
+            cashField.style.display = 'block';
+        } else if (selectedType === 'realEstate') {
+            realEstateField.style.display = 'block';
+        } else if (selectedType === 'stock') {
+            stockField.style.display = 'block';
+        }
+    });
+});
+
 // 과거 증여 금액 추가 버튼 이벤트 (여기에 추가)
 document.getElementById('addGiftButton').addEventListener('click', function () {
     const container = document.getElementById('previousGifts'); // 과거 증여 입력 컨테이너
