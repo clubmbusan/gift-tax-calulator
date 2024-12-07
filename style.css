@@ -54,6 +54,15 @@ button:hover {
     background-color: #45a049; /* Hover 시 더 진한 녹색 */
 }
 
+/* 하단 버튼 컨테이너 스타일 */
+#extraTaxButtons {
+    display: flex;
+    flex-direction: column; /* 세로로 배치 */
+    align-items: center; /* 중앙 정렬 */
+    gap: 10px; /* 버튼 간 간격 */
+    margin-top: 30px; /* 증여세 계산기와 간격 */
+}
+
 /* 과거 증여 금액 추가, 계산하기, 증여세 신고 버튼 스타일 */
 button#addGiftButton,
 button#calculateButton,
