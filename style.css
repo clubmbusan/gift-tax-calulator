@@ -7,7 +7,7 @@ body {
 }
 
 .calculator {
-    max-width: 600px; /* 계산기 전체 컨테이너 */
+    max-width: 600px;
     width: 90%;
     margin: 50px auto;
     padding: 20px;
@@ -24,7 +24,6 @@ form label {
 
 form input, form select {
     width: 100%;
-    max-width: 400px; /* 입력 필드 및 버튼 최대 너비 */
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid #ddd;
@@ -32,40 +31,7 @@ form input, form select {
     box-sizing: border-box;
 }
 
-/* 공통 버튼 스타일 */
-button {
-    background-color: #4CAF50; /* 녹색 */
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 5px;
-    text-align: center;
-    width: 100%; /* 버튼 길이를 입력 필드와 동일 */
-    max-width: 400px; /* 입력 필드와 버튼 길이 통일 */
-    margin: 10px 0;
-    display: block;
-}
-
-button:hover {
-    background-color: #45a049; /* Hover 시 더 어두운 녹색 */
-}
-
-/* 삭제 버튼 */
-button.remove-gift-button {
-    background-color: #f44336; /* 삭제 버튼 빨간색 */
-    color: white;
-    padding: 5px 10px;
-    font-size: 14px;
-    margin-left: 10px;
-}
-
-button.remove-gift-button:hover {
-    background-color: #d32f2f; /* Hover 시 더 어두운 빨간색 */
-}
-
-/* 과거 증여 금액 필드 */
+/* 과거 증여 금액 필드 스타일 */
 .gift-entry {
     display: flex;
     align-items: center;
@@ -74,11 +40,11 @@ button.remove-gift-button:hover {
 }
 
 .amount-input {
-    flex: 3; /* 금액 입력 칸 넓이 확장 */
+    flex: 3; /* 금액 입력 칸 넓이 */
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    height: 40px;
+    height: 40px; /* 동일 높이 */
     box-sizing: border-box;
 }
 
@@ -87,41 +53,31 @@ button.remove-gift-button:hover {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    height: 40px;
+    height: 40px; /* 동일 높이 */
     box-sizing: border-box;
 }
 
 .remove-gift-button {
-    flex: 1; /* 삭제 버튼 넓이 조정 */
+    flex: 1; /* 삭제 버튼 */
     background-color: #f44336;
     color: white;
     border: none;
     padding: 5px 10px;
-    height: 40px; /* 입력 필드와 동일 높이 */
-    text-align: center;
+    height: 40px;
     cursor: pointer;
     border-radius: 5px;
     font-size: 14px;
     box-sizing: border-box;
 }
 
-/* 삭제 버튼 호버 스타일 */
+/* 삭제 버튼 호버 */
 .remove-gift-button:hover {
     background-color: #d32f2f;
 }
 
-/* 하단 버튼 컨테이너 독립 중앙 정렬 */
-#extraTaxButtons {
-    display: flex;
-    flex-direction: column; /* 버튼을 세로로 배치 */
-    align-items: center; /* 중앙 정렬 */
-    gap: 10px; /* 버튼 간 간격 */
-    margin-top: 30px;
-}
-
-/* 하단 버튼 스타일 */
-#extraTaxButtons button {
-    background-color: #4CAF50; /* 녹색 */
+/* 녹색 버튼 (공통) */
+button {
+    background-color: #4CAF50;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -129,18 +85,39 @@ button.remove-gift-button:hover {
     cursor: pointer;
     border-radius: 5px;
     text-align: center;
-    width: 100%; /* 입력 필드와 동일한 너비 */
-    max-width: 400px;
+    width: 100%; /* 과거 증여 금액 필드와 동일한 너비 */
+    max-width: 600px; /* 최대 너비 설정 */
+    height: 40px; /* 동일 높이 */
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* 하단 별도 버튼 컨테이너 */
+#extraTaxButtons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* 하단 버튼 스타일 */
+#extraTaxButtons button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 150px; /* 고정 너비 */
+    height: 40px; /* 동일 높이 */
+    text-align: center;
 }
 
 #extraTaxButtons button:hover {
-    background-color: #45a049; /* Hover 시 어두운 녹색 */
-}
-
-/* 상단 제목 스타일 */
-h1 {
-    font-size: 24px;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
+    background-color: #45a049;
 }
