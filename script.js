@@ -296,6 +296,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // 계산하기 버튼 클릭 이벤트 추가
+// 계산하기 버튼 클릭 이벤트 추가
 document.getElementById('calculateButton').addEventListener('click', function () {
     const calculateButton = document.getElementById('calculateButton');
     calculateButton.style.backgroundColor = '#87CEEB'; // 하늘색
@@ -322,8 +323,35 @@ document.getElementById('calculateButton').addEventListener('click', function ()
     const previousGifts = getPreviousGifts(); // 과거 증여 데이터를 배열로 가져오는 함수
     const { adjustedExemption, taxableAmount } = calculateTaxableAmountAndExemption(relationship, giftAmount, previousGifts);
 
-    // [증여세 계산]
-    const giftTax = calculateGiftTax(taxableAmount);
+    // [누진세 계산]
+    const taxBrackets = [
+        { limit: 100000000, rate: 0.1, deduction: 0 },          // 1억 이하 10%
+        { limit: 500000000, rate: 0.2, deduction: 10000000 },  // 1억 초과 ~ 5억 이하 20%, 공제: 1천만 원
+        { limit: 1000000000, rate: 0.3, deduction: 60000000 }, // 5억 초과 ~ 10억 이하 30%, 공제: 6천만 원
+        { limit: 3000000000, rate: 0.4, deduction: 160000000 },// 10억 초과 ~ 30억 이하 40%, 공제: 1억6천만 원
+        { limit: Infinity, rate: 0.5, deduction: 460000000 }   // 30억 초과 50%, 공제: 4억6천만 원
+    ];
+    let tax = 0;
+    let previousLimit = 0;
+    let breakdownHTML = ''; // 누진세 계산 과정
+
+    for (const bracket of taxBrackets) {
+        if (taxableAmount > bracket.limit) {
+            const taxForBracket = (bracket.limit - previousLimit) * bracket.rate;
+            tax += taxForBracket;
+            breakdownHTML += `<p>${previousLimit.toLocaleString()}원 ~ ${bracket.limit.toLocaleString()}원: ${taxForBracket.toLocaleString()}원 (${(bracket.rate * 100).toFixed(0)}%)</p>`;
+            previousLimit = bracket.limit;
+        } else {
+            const taxForBracket = (taxableAmount - previousLimit) * bracket.rate;
+            tax += taxForBracket;
+            breakdownHTML += `<p>${previousLimit.toLocaleString()}원 ~ ${taxableAmount.toLocaleString()}원: ${taxForBracket.toLocaleString()}원 (${(bracket.rate * 100).toFixed(0)}%)</p>`;
+            tax -= bracket.deduction;  // 공제 적용
+            breakdownHTML += `<p>누진 공제: -${bracket.deduction.toLocaleString()}원</p>`;
+            break;
+        }
+    }
+
+    const giftTax = Math.max(tax, 0); // 음수 방지
 
     // [가산세 계산]
     const giftDate = document.getElementById('giftDate').value;
@@ -337,6 +365,8 @@ document.getElementById('calculateButton').addEventListener('click', function ()
         <p><strong>입력된 증여 금액:</strong> ${giftAmount.toLocaleString()}원</p>
         <p><strong>공제 금액:</strong> ${adjustedExemption.toLocaleString()}원</p>
         <p><strong>과세 금액:</strong> ${taxableAmount.toLocaleString()}원</p>
+        <h3>누진세 계산 과정</h3>
+        ${breakdownHTML}
         <p><strong>증여세 계산:</strong> ${giftTax.toLocaleString()}원</p>
         <p><strong>가산세 계산:</strong> ${latePenalty.toLocaleString()}원 (${penaltyMessage})</p>
         <h3>최종 결과</h3>
