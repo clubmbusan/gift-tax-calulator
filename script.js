@@ -246,12 +246,12 @@ document.getElementById('donationTaxButton').addEventListener('click', function 
     extendedPeriodContainer.style.display = newDisplay;
 });
 
-// 상속세 버튼 클릭 이벤트
+// 상속세 계산기 버튼 클릭 이벤트
 document.getElementById('inheritanceTaxButton').addEventListener('click', function () {
-    alert('상속세 기능은 현재 작업 중입니다.');
+    alert('상속세 계산기 기능은 현재 작업 중입니다.');
 });
 
-// 취득세 버튼 클릭 이벤트
+// 취득세 계산기 버튼 클릭 이벤트
 document.getElementById('acquisitionTaxButton').addEventListener('click', function () {
-    alert('취득세 기능은 현재 작업 중입니다.');
+    alert('취득세 계산기 기능은 현재 작업 중입니다.');
 });
