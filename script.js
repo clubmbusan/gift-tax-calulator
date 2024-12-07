@@ -82,117 +82,57 @@ function calculateAdjustedExemption(relationship, previousGifts) {
     return Math.max(adjustedExemption, 0);
 }
 
-function calculateFinalTax() {
-    console.log('=== Calculating Final Tax ==='); // 디버깅 시작 로그
+// 누진세 계산
+function calculateGiftTax(taxableAmount) {
+   const taxBrackets = [
+        { limit: 100000000, rate: 0.1, deduction: 0 },          // 1억 이하 10%
+        { limit: 500000000, rate: 0.2, deduction: 10000000 },  // 1억 초과 ~ 5억 이하 20%, 공제: 1천만 원
+        { limit: 1000000000, rate: 0.3, deduction: 60000000 }, // 5억 초과 ~ 10억 이하 30%, 공제: 6천만 원
+        { limit: 3000000000, rate: 0.4, deduction: 160000000 },// 10억 초과 ~ 30억 이하 40%, 공제: 1억6천만 원
+        { limit: Infinity, rate: 0.5, deduction: 460000000 }   // 30억 초과 50%, 공제: 4억6천만 원
+    ];
 
-    // 관계 입력 (select 요소에서 값 가져오기)
-    const relationshipSelect = document.getElementById('relationship');
-    if (!relationshipSelect) {
-        console.error('관계 선택 요소를 찾을 수 없습니다.');
-        return;
+    let tax = 0;
+    let previousLimit = 0;
+
+    for (const bracket of taxBrackets) {
+        if (taxableAmount > bracket.limit) {
+            // 구간을 초과하면, 해당 구간까지만 계산
+            tax += (bracket.limit - previousLimit) * (bracket.rate / 100);
+            previousLimit = bracket.limit;
+        } else {
+            // 마지막 구간에 대해 계산 (공제액 차감)
+            tax += (taxableAmount - previousLimit) * (bracket.rate / 100);
+            tax -= bracket.deduction;  // 공제액 차감
+            break;
+        }
     }
-    const relationship = relationshipSelect.value;
 
-    // 사용자가 입력한 금액을 가져옵니다.
-    const amountInput = document.querySelector('.amount-input');
-    if (!amountInput) {
-        console.error('금액 입력 요소를 찾을 수 없습니다.');
-        return;
-    }
-    const giftAmount = parseCurrency(amountInput.value || '0');
-
-    // 과거 증여 내역을 가져옵니다.
-    const previousGifts = getPreviousGifts();
-    console.log('Gift Amount:', giftAmount);
-    console.log('Previous Gifts:', previousGifts);
-
-    // 공제 및 과세 금액 계산
-    const { adjustedExemption, taxableAmount } = calculateTaxableAmountAndExemption(relationship, giftAmount, previousGifts);
-    console.log('Adjusted Exemption:', adjustedExemption);
-    console.log('Taxable Amount:', taxableAmount);
-
-    // 누진세 계산
-    const giftTax = calculateGiftTax(taxableAmount);
-    console.log('Gift Tax (Calculated):', giftTax);
-
-    const finalTax = giftTax;
-
-    // 결과 출력 (최종 세액)
-    const finalTaxElement = document.getElementById('finalTax');
-    if (!finalTaxElement) {
-        console.error('최종 세액 출력 요소를 찾을 수 없습니다.');
-        return;
-    }
-    finalTaxElement.innerText = `최종 납부세액: ${finalTax.toLocaleString()} 원`;
-
-    // 세액 계산 과정 출력
-    const taxBreakdownHTML = getTaxBreakdownHTML(giftAmount, taxableAmount, giftTax);
-    const taxBreakdownElement = document.getElementById('taxBreakdown');
-    if (!taxBreakdownElement) {
-        console.error('세액 계산 과정 출력 요소를 찾을 수 없습니다.');
-        return;
-    }
-    taxBreakdownElement.innerHTML = taxBreakdownHTML;
-
-    console.log('=== Final Tax Calculation Completed ==='); // 디버깅 종료 로그
+    return Math.max(tax, 0); // 음수 방지
 }
 
 // 최종 세금 계산 및 출력 함수
 function calculateFinalTax() {
-    console.log('=== Calculating Final Tax ==='); // 디버깅 시작 로그
-
     // 관계 입력 (select 요소에서 값 가져오기)
     const relationshipSelect = document.getElementById('relationship');
-    if (!relationshipSelect) {
-        console.error('관계 선택 요소를 찾을 수 없습니다.');
-        return;
-    }
-    const relationship = relationshipSelect.value;
+    const relationship = relationshipSelect ? relationshipSelect.value : 'adultChild'; // 기본값 'adultChild'
 
     // 사용자가 입력한 금액을 가져옵니다.
-    const amountInput = document.querySelector('.amount-input');
-    if (!amountInput) {
-        console.error('금액 입력 요소를 찾을 수 없습니다.');
-        return;
-    }
-    const giftAmount = parseCurrency(amountInput.value || '0');
+    const giftAmount = parseCurrency(document.querySelector('.amount-input').value || '0');
 
     // 과거 증여 내역을 가져옵니다.
     const previousGifts = getPreviousGifts();
-    console.log('Gift Amount:', giftAmount);
-    console.log('Previous Gifts:', previousGifts);
 
     // 공제 및 과세 금액 계산
     const { adjustedExemption, taxableAmount } = calculateTaxableAmountAndExemption(relationship, giftAmount, previousGifts);
-    console.log('Adjusted Exemption:', adjustedExemption);
-    console.log('Taxable Amount:', taxableAmount);
 
     // 누진세 계산
-    const giftTax = calculateGiftTax(taxableAmount);
-    console.log('Gift Tax (Calculated):', giftTax);
-
+    const giftTax = calculateGiftTax(taxableAmount); // 누진세 계산
     const finalTax = giftTax;
 
-    // 결과 출력 (최종 세액)
-    const finalTaxElement = document.getElementById('finalTax');
-    if (!finalTaxElement) {
-        console.error('최종 세액 출력 요소를 찾을 수 없습니다.');
-        return;
-    }
-    finalTaxElement.innerText = `최종 납부세액: ${finalTax.toLocaleString()} 원`;
-
-    // 세액 계산 과정 출력
-    const taxBreakdownHTML = getTaxBreakdownHTML(giftAmount, taxableAmount, giftTax);
-    const taxBreakdownElement = document.getElementById('taxBreakdown');
-    if (!taxBreakdownElement) {
-        console.error('세액 계산 과정 출력 요소를 찾을 수 없습니다.');
-        return;
-    }
-    taxBreakdownElement.innerHTML = taxBreakdownHTML;
-
-    console.log('=== Final Tax Calculation Completed ==='); // 디버깅 종료 로그
+    // 결과 출력
+    document.getElementById('finalTax').innerText = `최종 납부세액: ${finalTax.toLocaleString()} 원`;
 }
-
 
 // 금액 포맷팅 함수
 function parseCurrency(value) {
@@ -334,7 +274,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // 계산하기 버튼 클릭 이벤트 추가
-// 계산하기 버튼 클릭 이벤트 추가
 document.getElementById('calculateButton').addEventListener('click', function () {
     const calculateButton = document.getElementById('calculateButton');
     calculateButton.style.backgroundColor = '#87CEEB'; // 하늘색
@@ -361,35 +300,8 @@ document.getElementById('calculateButton').addEventListener('click', function ()
     const previousGifts = getPreviousGifts(); // 과거 증여 데이터를 배열로 가져오는 함수
     const { adjustedExemption, taxableAmount } = calculateTaxableAmountAndExemption(relationship, giftAmount, previousGifts);
 
-    // [누진세 계산]
-    const taxBrackets = [
-        { limit: 100000000, rate: 0.1, deduction: 0 },          // 1억 이하 10%
-        { limit: 500000000, rate: 0.2, deduction: 10000000 },  // 1억 초과 ~ 5억 이하 20%, 공제: 1천만 원
-        { limit: 1000000000, rate: 0.3, deduction: 60000000 }, // 5억 초과 ~ 10억 이하 30%, 공제: 6천만 원
-        { limit: 3000000000, rate: 0.4, deduction: 160000000 },// 10억 초과 ~ 30억 이하 40%, 공제: 1억6천만 원
-        { limit: Infinity, rate: 0.5, deduction: 460000000 }   // 30억 초과 50%, 공제: 4억6천만 원
-    ];
-    let tax = 0;
-    let previousLimit = 0;
-    let breakdownHTML = ''; // 누진세 계산 과정
-
-    for (const bracket of taxBrackets) {
-        if (taxableAmount > bracket.limit) {
-            const taxForBracket = (bracket.limit - previousLimit) * bracket.rate;
-            tax += taxForBracket;
-            breakdownHTML += `<p>${previousLimit.toLocaleString()}원 ~ ${bracket.limit.toLocaleString()}원: ${taxForBracket.toLocaleString()}원 (${(bracket.rate * 100).toFixed(0)}%)</p>`;
-            previousLimit = bracket.limit;
-        } else {
-            const taxForBracket = (taxableAmount - previousLimit) * bracket.rate;
-            tax += taxForBracket;
-            breakdownHTML += `<p>${previousLimit.toLocaleString()}원 ~ ${taxableAmount.toLocaleString()}원: ${taxForBracket.toLocaleString()}원 (${(bracket.rate * 100).toFixed(0)}%)</p>`;
-            tax -= bracket.deduction;  // 공제 적용
-            breakdownHTML += `<p>누진 공제: -${bracket.deduction.toLocaleString()}원</p>`;
-            break;
-        }
-    }
-
-    const giftTax = Math.max(tax, 0); // 음수 방지
+    // [증여세 계산]
+    const giftTax = calculateGiftTax(taxableAmount);
 
     // [가산세 계산]
     const giftDate = document.getElementById('giftDate').value;
@@ -403,8 +315,6 @@ document.getElementById('calculateButton').addEventListener('click', function ()
         <p><strong>입력된 증여 금액:</strong> ${giftAmount.toLocaleString()}원</p>
         <p><strong>공제 금액:</strong> ${adjustedExemption.toLocaleString()}원</p>
         <p><strong>과세 금액:</strong> ${taxableAmount.toLocaleString()}원</p>
-        <h3>누진세 계산 과정</h3>
-        ${breakdownHTML}
         <p><strong>증여세 계산:</strong> ${giftTax.toLocaleString()}원</p>
         <p><strong>가산세 계산:</strong> ${latePenalty.toLocaleString()}원 (${penaltyMessage})</p>
         <h3>최종 결과</h3>
