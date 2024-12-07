@@ -176,3 +176,26 @@ function calculateFinalTax() {
 
 // 계산하기 버튼 이벤트
 document.getElementById('calculateButton').addEventListener('click', calculateFinalTax);
+
+// 증여세 신고 버튼 클릭 이벤트
+document.getElementById('donationTaxButton').addEventListener('click', function () {
+    const donationTaxResult = document.getElementById('donationTaxResult');
+    if (donationTaxResult) {
+        // 결과 섹션을 표시
+        donationTaxResult.style.display = 'block';
+        donationTaxResult.innerHTML = `
+            <h3>증여세 신고 결과</h3>
+            <p>증여세 신고가 완료되었습니다.</p>
+        `;
+    }
+});
+
+// 상속세 버튼 클릭 이벤트
+document.getElementById('inheritanceTaxButton').addEventListener('click', function () {
+    alert('상속세 기능은 현재 작업 중입니다.');
+});
+
+// 취득세 버튼 클릭 이벤트
+document.getElementById('acquisitionTaxButton').addEventListener('click', function () {
+    alert('취득세 기능은 현재 작업 중입니다.');
+});
