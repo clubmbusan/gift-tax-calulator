@@ -96,28 +96,30 @@ button:hover {
     background-color: #45a049;
 }
 
-/* 하단 별도 버튼 컨테이너 */
+/* 하단 버튼 컨테이너 스타일 */
 #extraTaxButtons {
     display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
+    justify-content: center; /* 중앙 정렬 */
+    gap: 20px; /* 버튼 간 간격 */
+    margin-top: 20px; /* 위쪽 여백 */
 }
 
 /* 하단 버튼 스타일 */
 #extraTaxButtons button {
-    background-color: #4CAF50;
+    background-color: #4CAF50; /* 녹색 */
     color: white;
     border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 5px;
-    width: 150px; /* 고정 너비 */
-    height: 40px; /* 동일 높이 */
+    padding: 10px 20px; /* 버튼 내부 여백 */
+    font-size: 16px; /* 텍스트 크기 */
+    cursor: pointer; /* 마우스 커서 */
+    border-radius: 5px; /* 둥근 모서리 */
     text-align: center;
+    width: 100%; /* 버튼 길이를 입력 필드와 동일하게 */
+    max-width: 480px; /* 입력 필드와 동일한 최대 너비 */
+    box-sizing: border-box; /* 박스 크기 계산 통일 */
 }
 
+/* 하단 버튼 호버 시 스타일 */
 #extraTaxButtons button:hover {
-    background-color: #45a049;
+    background-color: #45a049; /* Hover 시 더 어두운 녹색 */
 }
