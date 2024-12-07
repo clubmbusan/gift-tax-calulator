@@ -1,3 +1,6 @@
+function parseCurrency(value) {
+    return parseInt(value.replace(/[^0-9]/g, ''), 10) || 0; // 콤마 제거 후 숫자로 변환
+}
 // 숫자 입력 필드에 콤마 추가
 document.addEventListener('input', function (event) {
     const target = event.target;
