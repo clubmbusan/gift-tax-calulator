@@ -116,7 +116,7 @@ button:hover {
     border-radius: 5px; /* 둥근 모서리 */
     text-align: center;
     width: 100%; /* 계산기 내부 버튼과 동일한 너비 */
-    max-width: 550px; /* 버튼 최대 너비 */
+    max-width: 560px; /* 버튼 최대 너비 */
     box-sizing: border-box; /* 크기 계산 통일 */
 }
 
