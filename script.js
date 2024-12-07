@@ -179,13 +179,18 @@ document.getElementById('calculateButton').addEventListener('click', calculateFi
 
 // 증여세 신고 버튼 클릭 이벤트
 document.getElementById('donationTaxButton').addEventListener('click', function () {
+    // 숨겨진 입력 필드 표시
+    document.getElementById('giftDateContainer').style.display = 'block';
+    document.getElementById('submissionDateContainer').style.display = 'block';
+    document.getElementById('extendedPeriodContainer').style.display = 'block';
+
     const donationTaxResult = document.getElementById('donationTaxResult');
     if (donationTaxResult) {
         // 결과 섹션을 표시
         donationTaxResult.style.display = 'block';
         donationTaxResult.innerHTML = `
             <h3>증여세 신고 결과</h3>
-            <p>증여세 신고가 완료되었습니다.</p>
+            <p>증여세 신고 입력 항목이 활성화되었습니다.</p>
         `;
     }
 });
