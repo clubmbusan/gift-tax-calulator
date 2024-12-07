@@ -80,6 +80,14 @@ button#donationTaxButton:hover {
     margin-top: 20px; /* 위쪽 여백 */
 }
 
+/* 하단 버튼 컨테이너 중앙 정렬 */
+#taxButtonsContainer {
+    display: flex; /* 버튼을 가로로 배치 */
+    justify-content: center; /* 버튼을 가로 중앙 정렬 */
+    gap: 20px; /* 버튼 간 간격 */
+    margin-top: 20px; /* 계산기와의 간격 */
+    }
+
 /* 하단 버튼 스타일 */
 #taxButtonsContainer button {
     background-color: #4CAF50; /* 녹색 */
