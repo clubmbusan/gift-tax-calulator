@@ -31,53 +31,40 @@ form input, form select, form button {
     box-sizing: border-box;
 }
 
-form select {
-    max-height: 150px;
-    overflow-y: auto;
-}
-
 /* 공통 버튼 스타일 */
-button {
-    background-color: #4CAF50; /* 기본 녹색 */
+button,
+#taxButtonsContainer button,
+button#addGiftButton,
+button#calculateButton,
+button#donationTaxButton {
+    background-color: #4CAF50; /* 녹색 */
     color: white;
     border: none;
     padding: 10px 20px;
     font-size: 16px;
-    cursor: pointer;
     border-radius: 5px;
-    box-sizing: border-box;
-    margin: 10px 0;
-    display: inline-block;
+    text-align: center;
+    width: 100%; /* 버튼 너비 통일 */
+    margin-top: 10px; /* 버튼 간 간격 */
+    cursor: pointer;
 }
 
-button:hover {
+button:hover,
+#taxButtonsContainer button:hover,
+button#addGiftButton:hover,
+button#calculateButton:hover,
+button#donationTaxButton:hover {
     background-color: #45a049; /* Hover 시 어두운 녹색 */
 }
 
-/* 하단의 상속세 및 취득세 버튼 컨테이너 중앙 정렬 */
+/* 하단 버튼 컨테이너 */
 #taxButtonsContainer {
-    display: flex;
-    justify-content: center; /* 가로 중앙 정렬 */
+    display: flex; /* 버튼을 가로로 나열 */
+    justify-content: center; /* 중앙 정렬 */
     gap: 20px; /* 버튼 간 간격 */
-    margin-top: 20px; /* 증여세 계산기와 간격 */
+    margin-top: 20px; /* 상단과 간격 */
 }
 
-/* 하단 버튼 공통 스타일 */
-#taxButtonsContainer button {
-    background-color: #4CAF50; /* 녹색 */
-    color: white;
-    border: none;
-    padding: 10px 20px; /* 버튼 크기 */
-    cursor: pointer;
-    border-radius: 5px;
-    font-size: 16px; /* 동일한 텍스트 크기 */
-    text-align: center;
-}
-
-/* 하단 버튼 호버 효과 */
-#taxButtonsContainer button:hover {
-    background-color: #45a049; /* Hover 시 더 어두운 녹색 */
-}
 /* 삭제 버튼 */
 button.remove-gift-button {
     background-color: #f44336; /* 삭제 버튼 빨간색 */
@@ -89,24 +76,6 @@ button.remove-gift-button {
 
 button.remove-gift-button:hover {
     background-color: #d32f2f; /* Hover 시 더 어두운 빨간색 */
-}
-
-/* 과거 증여 금액 추가, 계산하기, 증여세 신고 버튼 */
-button#addGiftButton,
-button#calculateButton,
-button#donationTaxButton {
-    background-color: #4CAF50; /* 동일한 녹색 */
-    color: white;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    width: 100%;
-}
-
-button#addGiftButton:hover,
-button#calculateButton:hover,
-button#donationTaxButton:hover {
-    background-color: #45a049;
 }
 
 /* 과거 증여 금액 필드 스타일 */
@@ -149,7 +118,6 @@ button#donationTaxButton:hover {
     box-sizing: border-box;
 }
 
-/* 삭제 버튼 호버 시 스타일 */
 .remove-gift-button:hover {
     background-color: #d32f2f;
 }
