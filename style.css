@@ -54,6 +54,13 @@ button:hover {
     background-color: #45a049; /* Hover 시 어두운 녹색 */
 }
 
+/* 하단의 상속세 및 취득세 버튼 컨테이너 중앙 정렬 */
+#taxButtonsContainer {
+    display: flex;
+    justify-content: center; /* 가로 중앙 정렬 */
+    gap: 20px; /* 버튼 간 간격 */
+}
+
 /* 삭제 버튼 */
 button.remove-gift-button {
     background-color: #f44336; /* 삭제 버튼 빨간색 */
