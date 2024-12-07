@@ -60,6 +60,20 @@
 <div id="previousGifts"></div>
 <button type="button" id="addGiftButton">과거 증여 금액 추가</button>
 
+<!-- 추가: 증여세 신고 버튼 -->
+<button type="button" id="donationTaxButton" style="margin-top: 20px;">증여세 신고</button>
+
+<!-- 추가: 상속세와 취득세 버튼 섹션 -->
+<div id="extraTaxButtons" style="margin-top: 30px;">
+    <button type="button" id="inheritanceTaxButton" style="margin-right: 10px;">상속세</button>
+    <button type="button" id="acquisitionTaxButton">취득세</button>
+</div>
+
+<!-- 추가: 증여세 신고 결과를 표시할 섹션 -->
+<div id="donationTaxResult" style="margin-top: 20px; display: none;">
+    <!-- 결과가 여기에 표시됩니다 -->
+</div>
+
 <!-- 증여일 -->
 <label for="giftDate">증여일:</label>
 <input type="date" id="giftDate" placeholder="연도-월-일">
