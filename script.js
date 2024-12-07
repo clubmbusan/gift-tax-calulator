@@ -13,7 +13,28 @@ document.addEventListener('input', function (event) {
         target.value = parseInt(rawValue, 10).toLocaleString(); // 숫자에 콤마 추가
     }
 });
+// 과거 증여 금액 추가 버튼 이벤트 (여기에 추가)
+document.getElementById('addGiftButton').addEventListener('click', function () {
+    const container = document.getElementById('previousGifts'); // 과거 증여 입력 컨테이너
+    const newGiftEntry = document.createElement('div');
+    newGiftEntry.className = 'gift-entry'; // 스타일 적용 가능
+    newGiftEntry.style.marginTop = '10px'; // 간격 추가
 
+    newGiftEntry.innerHTML = `
+        <input type="text" name="pastGiftAmount" placeholder="금액 입력 (원)" class="amount-input" style="width: 150px;">
+        <input type="date" name="pastGiftDate" class="date-input" style="margin-left: 10px;">
+        <button type="button" class="remove-gift-button" style="background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px; margin-left: 10px;">삭제</button>
+    `;
+
+    // 삭제 버튼 동작 추가
+    const removeButton = newGiftEntry.querySelector('.remove-gift-button');
+    removeButton.addEventListener('click', function () {
+        container.removeChild(newGiftEntry);
+    });
+
+    // 새 항목 추가
+    container.appendChild(newGiftEntry);
+});
 // 관계별 공제 한도 계산
 function getExemptionAmount(relationship) {
     const exemptions = {
