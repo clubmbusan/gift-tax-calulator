@@ -85,27 +85,35 @@ function calculateAdjustedExemption(relationship, previousGifts) {
 // 누진세 및 누진공제 적용
 function calculateGiftTax(taxableAmount) {
     const taxBrackets = [
-        { limit: 100000000, rate: 0.1, deduction: 0 },          // 1억 이하 10%
-        { limit: 500000000, rate: 0.2, deduction: 10000000 },  // 1억 초과 ~ 5억 이하 20%, 공제: 1천만 원
-        { limit: 1000000000, rate: 0.3, deduction: 60000000 }, // 5억 초과 ~ 10억 이하 30%, 공제: 6천만 원
-        { limit: 3000000000, rate: 0.4, deduction: 160000000 },// 10억 초과 ~ 30억 이하 40%, 공제: 1억6천만 원
-        { limit: Infinity, rate: 0.5, deduction: 460000000 }   // 30억 초과 50%, 공제: 4억6천만 원
+        { limit: 100000000, rate: 0.1, deduction: 0 },         // 1억 이하 10%
+        { limit: 500000000, rate: 0.2, deduction: 10000000 },  // 1억 초과 ~ 5억 이하 20%
+        { limit: 1000000000, rate: 0.3, deduction: 60000000 }, // 5억 초과 ~ 10억 이하 30%
+        { limit: 3000000000, rate: 0.4, deduction: 160000000 },// 10억 초과 ~ 30억 이하 40%
+        { limit: Infinity, rate: 0.5, deduction: 460000000 }   // 30억 초과 50%
     ];
 
     let tax = 0;
     let previousLimit = 0;
 
+    console.log(`과세 금액: ${taxableAmount.toLocaleString()} 원`);
+
     for (const bracket of taxBrackets) {
         if (taxableAmount > bracket.limit) {
-            tax += (bracket.limit - previousLimit) * bracket.rate;
+            const partialTax = (bracket.limit - previousLimit) * bracket.rate;
+            console.log(`구간: ${previousLimit} ~ ${bracket.limit}, 세율: ${bracket.rate * 100}%, 계산 세금: ${partialTax.toLocaleString()} 원`);
+            tax += partialTax;
             previousLimit = bracket.limit;
         } else {
-            tax += (taxableAmount - previousLimit) * bracket.rate;
-            tax -= bracket.deduction;
+            const partialTax = (taxableAmount - previousLimit) * bracket.rate;
+            console.log(`구간: ${previousLimit} ~ ${taxableAmount}, 세율: ${bracket.rate * 100}%, 계산 세금: ${partialTax.toLocaleString()} 원`);
+            tax += partialTax;
+            tax -= bracket.deduction; // 누진 공제 적용
+            console.log(`누진 공제: ${bracket.deduction.toLocaleString()} 원`);
             break;
         }
     }
 
+    console.log(`최종 계산된 증여세: ${Math.max(tax, 0).toLocaleString()} 원`);
     return Math.max(tax, 0);
 }
 
