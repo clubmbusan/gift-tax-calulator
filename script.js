@@ -291,10 +291,13 @@ function calculateRelationshipExemption() {
 // 최종 공제 계산 함수
 function calculateExemptions() {
     const marriageExemption = calculateMarriageExemption(); // 결혼 공제 계산
-    const remainingGiftAmount = Math.max(0, totalGiftAmount - marriageExemption); // 결혼 공제 후 남은 금액
-    const relationshipExemption = calculateRelationshipExemption(); // 관계 공제 계산
+    const remainingGiftAmount = Math.max(0, totalGiftAmount - marriageExemption); // 결혼 공제 적용 후 남은 금액
 
-    return marriageExemption + Math.min(remainingGiftAmount, relationshipExemption); // 결혼 공제 + 관계 공제 반환
+    // 관계 공제 계산: 남은 금액에서 관계 공제를 별도로 적용
+    const relationship = document.getElementById('relationship').value;
+    const relationshipExemption = Math.min(remainingGiftAmount, getExemptionAmount(relationship));
+
+    return marriageExemption + relationshipExemption; // 결혼 공제 + 관계 공제 반환
 }
 
 // 최종 세금 계산 (계산하기 버튼)
