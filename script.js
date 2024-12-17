@@ -253,26 +253,30 @@ closeMarriageGiftModal.addEventListener('click', function () {
     marriageGiftModal.style.display = 'none';
 });
 
-// 결혼 공제 계산 함수
+// 결혼 공제 함수
 function calculateMarriageExemption() {
     const maxExemptionPerParent = 150000000; // 부모 각각 최대 1억 5천만 원
 
     const fatherExemption = Math.min(fatherGiftAmount, maxExemptionPerParent);
     const motherExemption = Math.min(motherGiftAmount, maxExemptionPerParent);
 
-    return fatherExemption + motherExemption; // 총 결혼 공제 반환
+    return fatherExemption + motherExemption; // 결혼 공제 반환
+}
+
+// 관계 공제 함수
+function calculateRelationshipExemption() {
+    const relationship = document.getElementById('relationship').value; // 관계 값 가져오기
+    const relationshipExemption = getExemptionAmount(relationship); // 관계 공제 한도 가져오기
+
+    return Math.min(totalGiftAmount, relationshipExemption); // 관계 공제 계산
 }
 
 // 최종 공제 계산 함수
 function calculateExemptions() {
     const marriageExemption = calculateMarriageExemption(); // 결혼 공제 계산
-    const remainingGiftAmount = Math.max(0, totalGiftAmount - marriageExemption); // 결혼 공제 적용 후 남은 금액
+    const relationshipExemption = calculateRelationshipExemption(); // 관계 공제 계산
 
-    // 관계 공제 계산: 결혼 증여가 적용되지 않은 경우에만 관계 공제를 적용
-    const relationship = document.getElementById('relationship').value;
-    const relationshipExemption = (marriageExemption > 0) ? 0 : Math.min(remainingGiftAmount, getExemptionAmount(relationship));
-
-    return marriageExemption + relationshipExemption; // 결혼 공제 + 관계 공제 반환
+    return marriageExemption + relationshipExemption; // 결혼 공제 + 관계 공제 합산
 }
 
 // 최종 세금 계산 (계산하기 버튼)
