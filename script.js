@@ -255,43 +255,40 @@ closeMarriageGiftModal.addEventListener('click', function () {
 
 // 결혼 공제 함수
 function calculateMarriageExemption() {
-    const maxExemptionPerParent = 150000000; // 부모 각각 최대 1억 5천만 원
+    const maxFatherExemption = 150000000; // 부 최대 공제 한도: 1억 5천만 원
+    const maxMotherExemption = 100000000; // 모 최대 공제 한도: 1억 원
 
-    const fatherExemption = Math.min(fatherGiftAmount, maxExemptionPerParent);
-    const motherExemption = Math.min(motherGiftAmount, maxExemptionPerParent);
+    // 각각의 부모 공제를 최대 한도 내에서 계산
+    const fatherExemption = Math.min(fatherGiftAmount, maxFatherExemption);
+    const motherExemption = Math.min(motherGiftAmount, maxMotherExemption);
 
-    return fatherExemption + motherExemption; // 결혼 공제 반환
+    return fatherExemption + motherExemption; // 총 결혼 공제 반환
 }
 
 // 관계 공제 함수
 function calculateRelationshipExemption() {
     const relationship = document.getElementById('relationship').value; // 관계 값 가져오기
     const relationshipExemption = getExemptionAmount(relationship); // 관계 공제 한도 가져오기
+    const remainingGiftAmount = totalGiftAmount; // 결혼 공제를 적용하지 않은 전체 금액 기준
 
-    return Math.min(totalGiftAmount, relationshipExemption); // 관계 공제 계산
+    return Math.min(remainingGiftAmount, relationshipExemption); // 관계 공제 계산
 }
 
 // 최종 공제 계산 함수
 function calculateExemptions() {
     const marriageExemption = calculateMarriageExemption(); // 결혼 공제 계산
+    const remainingGiftAmount = Math.max(0, totalGiftAmount - marriageExemption); // 결혼 공제 후 남은 금액
     const relationshipExemption = calculateRelationshipExemption(); // 관계 공제 계산
 
-    return marriageExemption + relationshipExemption; // 결혼 공제 + 관계 공제 합산
+    return marriageExemption + Math.min(remainingGiftAmount, relationshipExemption); // 결혼 공제 + 관계 공제 반환
 }
 
 // 최종 세금 계산 (계산하기 버튼)
 function calculateFinalTax() {
     const giftAmount = getGiftAmount(); // 총 증여 금액
-    const exemptions = calculateExemptions(); // 공제 금액
+    const exemptions = calculateExemptions(); // 최종 공제 금액
     const taxableAmount = Math.max(0, giftAmount - exemptions); // 과세 금액
     const giftTax = calculateGiftTax(taxableAmount); // 증여세 계산
-
-    // 가산세 계산
-    const giftDate = document.getElementById('giftDate').value;
-    const submissionDate = document.getElementById('submissionDate').value;
-    const { penalty, message } = calculateLatePenalty(submissionDate, giftDate, giftTax);
-
-    const totalTax = giftTax + penalty;
 
     // 결과 출력
     document.getElementById('result').innerHTML = `
@@ -300,8 +297,7 @@ function calculateFinalTax() {
         <p>공제 금액: ${exemptions.toLocaleString()} 원</p>
         <p>과세 금액: ${taxableAmount.toLocaleString()} 원</p>
         <p>증여세: ${giftTax.toLocaleString()} 원</p>
-        <p>가산세: ${penalty.toLocaleString()} 원 (${message})</p>
-        <p><strong>최종 납부세액: ${totalTax.toLocaleString()} 원</strong></p>
+        <p><strong>최종 납부세액: ${giftTax.toLocaleString()} 원</strong></p>
     `;
 }
 
