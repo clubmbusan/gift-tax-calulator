@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
     fatherAmountInput.addEventListener('input', updateRemainingAmount);
     motherAmountInput.addEventListener('input', updateRemainingAmount);
 
-  // 저장 버튼 클릭 (모달에서 입력값을 저장)
+   // 저장 버튼 클릭 (모달에서 입력값을 저장)
 saveMarriageGiftButton.addEventListener('click', function () {
     const fatherAmount = parseCurrency(fatherAmountInput.value || '0'); // 부 입력값
     const motherAmount = parseCurrency(motherAmountInput.value || '0'); // 모 입력값
@@ -248,6 +248,11 @@ saveMarriageGiftButton.addEventListener('click', function () {
     marriageGiftModal.style.display = 'none';
 });
 
+    // 닫기 버튼 클릭 이벤트
+closeMarriageGiftModal.addEventListener('click', function () {
+    marriageGiftModal.style.display = 'none';
+});
+
 // 결혼 공제 계산 함수
 function calculateMarriageExemption() {
     const maxExemptionPerParent = 150000000; // 부모 각각 최대 1억 5천만 원
@@ -258,14 +263,14 @@ function calculateMarriageExemption() {
     return fatherExemption + motherExemption; // 총 결혼 공제 반환
 }
 
-// 최종 공제 계산 함수 (결혼 공제 정상 복구)
+// 최종 공제 계산 함수
 function calculateExemptions() {
     const marriageExemption = calculateMarriageExemption(); // 결혼 공제 계산
-    const remainingGiftAmount = Math.max(0, totalGiftAmount - marriageExemption); // 결혼 공제 후 남은 금액
+    const remainingGiftAmount = Math.max(0, totalGiftAmount - marriageExemption); // 결혼 공제 적용 후 남은 금액
 
-    // 관계 공제 계산 (기존 로직: 결혼 공제와 관계 없이 계산)
+    // 관계 공제 계산: 결혼 증여가 적용되지 않은 경우에만 관계 공제를 적용
     const relationship = document.getElementById('relationship').value;
-    const relationshipExemption = Math.min(remainingGiftAmount, getExemptionAmount(relationship));
+    const relationshipExemption = (marriageExemption > 0) ? 0 : Math.min(remainingGiftAmount, getExemptionAmount(relationship));
 
     return marriageExemption + relationshipExemption; // 결혼 공제 + 관계 공제 반환
 }
