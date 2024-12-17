@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
     fatherAmountInput.addEventListener('input', updateRemainingAmount);
     motherAmountInput.addEventListener('input', updateRemainingAmount);
 
-   // 저장 버튼 클릭 (모달에서 입력값을 저장)
+  // 저장 버튼 클릭 (모달에서 입력값을 저장)
 saveMarriageGiftButton.addEventListener('click', function () {
     const fatherAmount = parseCurrency(fatherAmountInput.value || '0'); // 부 입력값
     const motherAmount = parseCurrency(motherAmountInput.value || '0'); // 모 입력값
@@ -245,11 +245,6 @@ saveMarriageGiftButton.addEventListener('click', function () {
 
     // 사용자에게 저장된 결과 알림
     alert(`결혼 증여 저장됨\n부: ${fatherGiftAmount.toLocaleString()} 원\n모: ${motherGiftAmount.toLocaleString()} 원`);
-    marriageGiftModal.style.display = 'none';
-});
-
-    // 닫기 버튼 클릭 이벤트
-closeMarriageGiftModal.addEventListener('click', function () {
     marriageGiftModal.style.display = 'none';
 });
 
