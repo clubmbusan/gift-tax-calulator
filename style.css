@@ -124,3 +124,31 @@ button:hover {
 #extraTaxButtons button:hover {
     background-color: #45a049; /* Hover 시 어두운 녹색 */
 }
+/* 추가된 스타일 */
+/* 저장 버튼 스타일 (붉은색) */
+#saveMarriageGiftButton {
+    background-color: #dc3545;
+    color: white;
+}
+#saveMarriageGiftButton:hover {
+    background-color: #c82333;
+}
+
+/* 닫기 버튼 스타일 (회색) */
+#closeMarriageGiftModal {
+    background-color: #6c757d;
+    color: white;
+}
+#closeMarriageGiftModal:hover {
+    background-color: #5a6268;
+}
+
+/* 신고하기 버튼 스타일 (푸른색) */
+#donationTaxButton {
+    background-color: #007bff;
+    color: white;
+}
+#donationTaxButton:hover {
+    background-color: #0056b3;
+}
+
