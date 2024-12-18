@@ -81,28 +81,22 @@ function getGiftAmount() {
 // 누진세 계산
 function calculateGiftTax(taxableAmount) {
     const taxBrackets = [
-        { limit: 100000000, rate: 0.1, deduction: 0 },
-        { limit: 500000000, rate: 0.2, deduction: 10000000 },
-        { limit: 1000000000, rate: 0.3, deduction: 60000000 },
-        { limit: 3000000000, rate: 0.4, deduction: 160000000 },
-        { limit: Infinity, rate: 0.5, deduction: 460000000 }
+        { limit: 100000000, rate: 0.1, deduction: 0 },           // 1억 이하
+        { limit: 500000000, rate: 0.2, deduction: 10000000 },    // 5억 이하
+        { limit: 1000000000, rate: 0.3, deduction: 60000000 },   // 10억 이하
+        { limit: 3000000000, rate: 0.4, deduction: 160000000 },  // 30억 이하
+        { limit: Infinity, rate: 0.5, deduction: 460000000 }     // 30억 초과
     ];
 
-    let tax = 0;
-    let previousLimit = 0;
-
+    // 세율 구간에 맞는 세율과 누진공제를 적용
     for (const bracket of taxBrackets) {
-        if (taxableAmount > bracket.limit) {
-            tax += (bracket.limit - previousLimit) * bracket.rate;
-            previousLimit = bracket.limit;
-        } else {
-            tax += (taxableAmount - previousLimit) * bracket.rate;
-            tax -= bracket.deduction;
-            break;
+        if (taxableAmount <= bracket.limit) {
+            const tax = taxableAmount * bracket.rate - bracket.deduction;
+            return Math.max(tax, 0); // 세금이 음수면 0으로 처리
         }
     }
 
-    return Math.max(tax, 0);
+    return 0; // 예외 상황에 대한 안전장치
 }
 
 // 가산세 계산 로직
