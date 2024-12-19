@@ -1,322 +1,338 @@
-// 유틸리티 함수: 콤마 제거 후 숫자로 변환
-function parseCurrency(value) {
-    return parseInt(value.replace(/[^0-9]/g, ''), 10) || 0;
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM 요소 가져오기
+    const propertyTypeSelect = document.getElementById('propertyType'); // 부동산 유형 선택
+    const regulatedAreaField = document.getElementById('regulatedAreaField'); // 조정대상지역 여부 필드
+    const singleHouseExemptionField = document.getElementById('singleHouseExemptionField'); // 1세대 1주택 여부 필드
+    const acquisitionDateInput = document.getElementById('acquisitionDate'); // 취득일 입력
+    const transferDateInput = document.getElementById('transferDate'); // 양도일 입력
+    const holdingYearsDisplay = document.getElementById('holdingYearsDisplay'); // 보유 기간 표시
+    const calculateButton = document.getElementById('calculateButton'); // 계산 버튼
+    const toggleAcquisitionButton = document.getElementById('toggleAcquisitionButton'); // 취득가액 버튼
+    const acquisitionModal = document.getElementById('acquisitionModal'); // 취득가액 모달
+    const closeAcquisitionModal = document.getElementById('closeAcquisitionModal'); // 취득가액 모달 닫기 버튼
+    const saveAcquisitionButton = document.getElementById('saveAcquisition'); // 취득가액 저장 버튼
+    const totalAcquisitionDisplay = document.getElementById('totalAcquisitionDisplay'); // 취득가액 표시
+    const toggleExpensesButton = document.getElementById('toggleExpensesButton'); // 필요경비 버튼
+    const expensesModal = document.getElementById('expensesModal'); // 필요경비 모달
+    const closeExpensesModal = document.getElementById('closeExpensesModal'); // 필요경비 모달 닫기 버튼
+    const saveExpensesButton = document.getElementById('saveExpenses'); // 필요경비 저장 버튼
+    const totalExpensesDisplay = document.getElementById('totalExpensesDisplay'); // 필요경비 표시
+
+    // 상태 변수
+    let isAcquisitionModalOpen = false; // 취득가액 모달 상태
+    let isExpensesModalOpen = false; // 필요경비 모달 상태
+
+   // 방어 코드 추가: 모든 요소가 null인지 확인
+if (!propertyTypeSelect || !regulatedAreaField || !singleHouseExemptionField || !acquisitionDateInput || !transferDateInput || !calculateButton) {
+    console.error('필수 요소가 HTML에 누락되었습니다. HTML 구조를 점검하세요.');
+    return;
 }
 
-// 숫자 입력 필드에 콤마 추가
-document.addEventListener('input', function (event) {
+    // 숫자 입력 필드에 콤마 추가 이벤트
+document.addEventListener('input', (event) => {
     const target = event.target;
 
-    // 콤마 적용 대상 필드 ID
-const applicableFields = [
-    'cashAmount',          // 현금 입력 필드
-    'realEstateValue',     // 부동산 입력 필드
-    'stockPrice',          // 주식 가격 입력 필드
-    'fatherAmountInput',   // 모달: 부 금액 입력
-    'motherAmountInput'    // 모달: 모 금액 입력
+    // 콤마를 적용할 모든 필드 ID 정의
+const numericFields = [
+    'acquisitionPrice', 
+    'acquisitionBrokerageFee', 
+    'acquisitionLegalFee', 
+    'acquisitionOtherExpenses',
+    'transferPrice', 
+    'transferBrokerageFee', 
+    'transferLegalFee', 
+    'transferOtherExpenses',
+    'transferLegalServiceFee' // 법무사 수수료 추가
 ];
 
-    // 콤마 적용 여부 확인
-    if (applicableFields.includes(target.id)) {
-        const rawValue = target.value.replace(/[^0-9]/g, ''); // 숫자 외 문자 제거
-        if (rawValue === '') {
-            target.value = ''; // 빈 값 처리
-            return;
-        }
-        target.value = parseInt(rawValue, 10).toLocaleString(); // 숫자에 콤마 추가
+    // 숫자 입력 필드 확인 후 콤마 추가
+    if (numericFields.includes(target.id)) {
+        const rawValue = target.value.replace(/[^0-9]/g, ''); // 숫자만 남기기
+        target.value = rawValue ? parseInt(rawValue, 10).toLocaleString() : ''; // 콤마 추가
     }
 });
 
-// 재산 유형 선택 이벤트 리스너
-document.addEventListener('DOMContentLoaded', function () {
-    const assetType = document.getElementById('assetType'); // 재산 유형 select 요소
-    assetType.addEventListener('change', function (e) {
-        const selectedType = e.target.value;
-
-        const cashField = document.getElementById('cashInputField');
-        const realEstateField = document.getElementById('realEstateInputField');
-        const stockField = document.getElementById('stockInputField');
-
-        // 모든 필드를 숨김 처리
-        cashField.style.display = 'none';
-        realEstateField.style.display = 'none';
-        stockField.style.display = 'none';
-
-        // 선택된 유형에 따라 필드 표시
-        if (selectedType === 'cash') cashField.style.display = 'block';
-        else if (selectedType === 'realEstate') realEstateField.style.display = 'block';
-        else if (selectedType === 'stock') stockField.style.display = 'block';
-    });
-});
-
-// 관계별 공제 한도 계산
-function getExemptionAmount(relationship) {
-    const exemptions = {
-        'adultChild': 50000000,       // 성년 자녀: 5천만 원
-        'minorChild': 20000000,       // 미성년 자녀: 2천만 원
-        'spouse': 600000000,          // 배우자: 6억 원
-        'sonInLawDaughterInLaw': 50000000, // 사위/며느리: 5천만 원
-        'other': 10000000             // 타인: 1천만 원
-    };
-    return exemptions[relationship] || 0;
-}
-
-// 재산 유형별 증여 금액 계산
-function getGiftAmount() {
-    const selectedType = document.getElementById('assetType').value;
-    let giftAmount = 0;
-
-    if (selectedType === 'cash') {
-        giftAmount = parseCurrency(document.getElementById('cashAmount').value || '0');
-    } else if (selectedType === 'realEstate') {
-        giftAmount = parseCurrency(document.getElementById('realEstateValue').value || '0');
-    } else if (selectedType === 'stock') {
-        const stockQuantity = parseInt(document.getElementById('stockQuantity').value || '0', 10);
-        const stockPrice = parseCurrency(document.getElementById('stockPrice').value || '0');
-        giftAmount = stockQuantity * stockPrice;
-    }
-    return giftAmount;
-}
-
-// 누진세 계산
-function calculateGiftTax(taxableAmount) {
-    const taxBrackets = [
-        { limit: 100000000, rate: 0.1, deduction: 0 },           // 1억 이하
-        { limit: 500000000, rate: 0.2, deduction: 10000000 },    // 5억 이하
-        { limit: 1000000000, rate: 0.3, deduction: 60000000 },   // 10억 이하
-        { limit: 3000000000, rate: 0.4, deduction: 160000000 },  // 30억 이하
-        { limit: Infinity, rate: 0.5, deduction: 460000000 }     // 30억 초과
-    ];
-
-    // 세율 구간에 맞는 세율과 누진공제를 적용
-    for (const bracket of taxBrackets) {
-        if (taxableAmount <= bracket.limit) {
-            const tax = taxableAmount * bracket.rate - bracket.deduction;
-            return Math.max(tax, 0); // 세금이 음수면 0으로 처리
-        }
-    }
-
-    return 0; // 예외 상황에 대한 안전장치
-}
-
-// 가산세 계산 로직
-function calculateLatePenalty(submissionDate, giftDate, giftTax) {
-    const giftDateObj = new Date(giftDate);
-    const submissionDateObj = new Date(submissionDate);
-
-    if (!giftDate || !submissionDate || isNaN(giftDateObj) || isNaN(submissionDateObj)) {
-        return { penalty: 0, message: "날짜가 잘못 입력되었습니다." };
-    }
-
-    const dueDate = new Date(giftDateObj);
-    dueDate.setMonth(dueDate.getMonth() + 3);
-
-    const extendedDueDate = new Date(giftDateObj);
-    extendedDueDate.setMonth(giftDateObj.getMonth() + 6);
-
-    let penalty = 0;
-    let message = "";
-
-    if (submissionDateObj > dueDate) {
-        const overdueDays = Math.ceil((submissionDateObj - dueDate) / (1000 * 60 * 60 * 24));
-
-        if (submissionDateObj <= extendedDueDate) {
-            penalty += giftTax * 0.1;
-            message = `신고불성실 가산세: 10% (${overdueDays}일 초과)`;
+    // 부동산 유형에 따라 필드 표시/숨김
+    const updateFieldsByPropertyType = () => {
+        const propertyType = propertyTypeSelect.value;
+        if (propertyType === 'house') {
+            regulatedAreaField.style.display = 'block';
+            singleHouseExemptionField.style.display = 'block';
         } else {
-            penalty += giftTax * 0.2;
-            message = `신고불성실 가산세: 20% (${overdueDays}일 초과)`;
+            regulatedAreaField.style.display = 'none';
+            singleHouseExemptionField.style.display = 'none';
         }
+    };
 
-        const delayPenalty = Math.min(giftTax * 0.0025 * overdueDays, giftTax * 0.1);
-        penalty += delayPenalty;
-        message += ` + 지연가산세: ${delayPenalty.toLocaleString()}원`;
-    } else {
-        message = "신고 기한 내 신고 완료";
-    }
+    propertyTypeSelect.addEventListener('change', updateFieldsByPropertyType);
+    updateFieldsByPropertyType();
 
-    return { penalty: Math.floor(penalty), message };
-}
+    // 보유 기간 자동 계산
+    const calculateHoldingYears = () => {
+        const acquisitionDate = new Date(acquisitionDateInput.value);
+        const transferDate = new Date(transferDateInput.value);
 
-// 과거 증여 금액 추가 로직
-document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('addGiftButton').addEventListener('click', function () {
-        const container = document.getElementById('previousGifts'); // 과거 증여 입력 컨테이너
-        const newGiftEntry = document.createElement('div');
-        newGiftEntry.className = 'gift-entry'; // 스타일 적용 가능
-        newGiftEntry.style.marginTop = '10px'; // 간격 추가
-
-        newGiftEntry.innerHTML = `
-            <input type="text" name="pastGiftAmount" placeholder="금액 입력 (원)" class="amount-input" style="width: 150px;">
-            <input type="date" name="pastGiftDate" class="date-input" style="margin-left: 10px;">
-            <button type="button" class="remove-gift-button" style="background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px; margin-left: 10px;">삭제</button>
-        `;
-
-        // 삭제 버튼 동작 추가
-        const removeButton = newGiftEntry.querySelector('.remove-gift-button');
-        removeButton.addEventListener('click', function () {
-            container.removeChild(newGiftEntry);
-        });
-
-        container.appendChild(newGiftEntry);
-    });
-});
-
-   // 전역 변수 선언
-let totalGiftAmount = 0; // 총 증여 금액
-let fatherGiftAmount = 0; // 부 증여 금액
-let motherGiftAmount = 0; // 모 증여 금액
-
-// *** 결혼 증여 모달 로직 ***
-document.addEventListener('DOMContentLoaded', function () {
-    const marriageGiftButton = document.getElementById('marriageGiftButton');
-    const marriageGiftModal = document.getElementById('marriageGiftModal');
-    const closeMarriageGiftModal = document.getElementById('closeMarriageGiftModal');
-    const saveMarriageGiftButton = document.getElementById('saveMarriageGiftButton');
-
-    const fatherAmountInput = document.getElementById('fatherAmountInput'); // 부 입력 필드
-    const motherAmountInput = document.getElementById('motherAmountInput'); // 모 입력 필드
-    const remainingAmount = document.getElementById('remainingAmount'); // 남은 금액 표시
-
-    let remainingGiftAmount = 0; // 남은 금액 (별도 관리)
-
-    // 모달 열기 버튼
-    marriageGiftButton.addEventListener('click', function () {
-        const cashInput = document.getElementById('cashAmount');
-        totalGiftAmount = parseCurrency(cashInput.value || '0'); // 최초 증여 금액 유지
-        remainingGiftAmount = totalGiftAmount; // 남은 금액 초기화
-
-        if (totalGiftAmount === 0) {
-            alert('증여 금액을 먼저 입력하세요.');
+        if (isNaN(acquisitionDate) || isNaN(transferDate)) {
+            holdingYearsDisplay.value = '날짜를 입력하세요.';
             return;
         }
 
-        // 남은 금액 초기화
-        remainingAmount.textContent = `${remainingGiftAmount.toLocaleString()} 원`;
-        marriageGiftModal.style.display = 'block';
+        const diffInMilliseconds = transferDate - acquisitionDate;
+        if (diffInMilliseconds < 0) {
+            holdingYearsDisplay.value = '양도일이 취득일보다 빠릅니다.';
+            return;
+        }
+
+        const diffInYears = diffInMilliseconds / (1000 * 60 * 60 * 24 * 365);
+        holdingYearsDisplay.value = diffInYears.toFixed(2) + '년';
+    };
+
+    acquisitionDateInput.addEventListener('change', calculateHoldingYears);
+    transferDateInput.addEventListener('change', calculateHoldingYears);
+   
+  // 모달 입력 필드를 초기화하는 공통 함수
+const resetFields = (modalId) => {
+    document.querySelectorAll(`#${modalId} input[type="text"]`).forEach((input) => {
+        input.value = ''; // 입력 필드 값 초기화
+    });
+};
+
+// 모달 열기/닫기 공통 함수
+const openModal = (modal) => {
+    modal.style.display = 'block';
+};
+
+const closeModal = (modal, modalId) => {
+    modal.style.display = 'none';
+    if (modalId) resetFields(modalId); // 모달 닫을 때 입력 필드 초기화
+};
+
+    // 취득가액 모달 열기/닫기
+    toggleAcquisitionButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (isAcquisitionModalOpen) {
+            closeModal(acquisitionModal);
+        } else {
+            openModal(acquisitionModal);
+        }
+        isAcquisitionModalOpen = !isAcquisitionModalOpen;
     });
 
-    // 부모별 금액 입력 시 남은 금액 자동 계산
-    function updateRemainingAmount() {
-        const fatherAmount = parseCurrency(fatherAmountInput.value || '0');
-        const motherAmount = parseCurrency(motherAmountInput.value || '0');
+    closeAcquisitionModal.addEventListener('click', (event) => {
+        event.preventDefault();
+        closeModal(acquisitionModal);
+        isAcquisitionModalOpen = false;
+    });
 
-        // 남은 금액 계산 (totalGiftAmount는 변경하지 않음)
-        remainingGiftAmount = Math.max(0, totalGiftAmount - (fatherAmount + motherAmount));
-        remainingAmount.textContent = `${remainingGiftAmount.toLocaleString()} 원`;
+    // 취득가액 저장
+   saveAcquisitionButton.addEventListener('click', () => {
+    // 취득가액 입력 필드 가져오기
+    const acquisitionPriceElement = document.getElementById('acquisitionPrice');
+
+    // 경비 항목 필드 가져오기
+    const acquisitionBrokerageFee = parseInt(document.getElementById('acquisitionBrokerageFee').value.replace(/,/g, '') || '0', 10);
+    const acquisitionLegalFee = parseInt(document.getElementById('acquisitionLegalFee').value.replace(/,/g, '') || '0', 10);
+    const acquisitionOtherExpenses = parseInt(document.getElementById('acquisitionOtherExpenses').value.replace(/,/g, '') || '0', 10);
+
+    // 경비 합산
+    const totalExpenses = acquisitionBrokerageFee + acquisitionLegalFee + acquisitionOtherExpenses;
+
+    // 취득가액 값 읽기, 없으면 0으로 처리
+    const acquisitionPrice = acquisitionPriceElement ? parseInt(acquisitionPriceElement.value.replace(/,/g, '') || '0', 10) : 0;
+
+    // 총 취득가액 계산
+    const totalAcquisition = acquisitionPrice + totalExpenses;
+
+    // 결과 표시
+    totalAcquisitionDisplay.textContent = `총 취득가액: ${totalAcquisition.toLocaleString()} 원`;
+
+    // 모달 닫기
+    closeModal(acquisitionModal);
+    isAcquisitionModalOpen = false;
+});
+
+    // 필요경비 모달 열기/닫기
+toggleExpensesButton.addEventListener('click', (event) => {
+    event.preventDefault();
+    openModal(expensesModal);
+});
+
+closeExpensesModal.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeModal(expensesModal);
+});
+
+// 필요경비 저장
+saveExpensesButton.addEventListener('click', () => {
+    // 필요경비 항목 필드 값 읽기
+    const transferBrokerageFee = parseInt(document.getElementById('transferBrokerageFee').value.replace(/,/g, '') || '0', 10); // 자본적 지출
+    const transferLegalFee = parseInt(document.getElementById('transferLegalFee').value.replace(/,/g, '') || '0', 10); // 중개 수수료
+    const transferLegalServiceFee = parseInt(document.getElementById('transferLegalServiceFee').value.replace(/,/g, '') || '0', 10); // 법무사 비용
+    const transferOtherExpenses = parseInt(document.getElementById('transferOtherExpenses').value.replace(/,/g, '') || '0', 10); // 기타 비용
+
+    // 필요경비 합산
+    const totalExpenses = transferBrokerageFee + transferLegalFee + transferLegalServiceFee + transferOtherExpenses;
+
+    // 결과 표시
+    totalExpensesDisplay.textContent = `총 필요경비: ${totalExpenses.toLocaleString()} 원`;
+
+    // 모달 닫기
+    closeModal(expensesModal);
+});
+
+// 필요경비 입력 필드 상태 관리
+document.querySelectorAll('#expensesModal input[type="text"]').forEach((input) => {
+    input.addEventListener('input', () => {
+        // 사용자가 값을 입력하면 자동으로 체크된 상태로 변경
+        const checkbox = document.getElementById(input.id.replace('Amount', ''));
+        if (checkbox) checkbox.checked = !!input.value.trim();
+    });
+});
+   
+// 계산 버튼 클릭 이벤트
+calculateButton.addEventListener('click', () => {
+    const acquisitionDate = new Date(acquisitionDateInput.value);
+    const transferDate = new Date(transferDateInput.value);
+
+    // 보유 기간 계산
+    if (isNaN(acquisitionDate) || isNaN(transferDate)) {
+        alert('취득일과 양도일을 입력해주세요.');
+        return;
     }
 
-    fatherAmountInput.addEventListener('input', updateRemainingAmount);
-    motherAmountInput.addEventListener('input', updateRemainingAmount);
+    const diffInMilliseconds = transferDate - acquisitionDate;
+    if (diffInMilliseconds < 0) {
+        alert('양도일이 취득일보다 빠를 수 없습니다.');
+        return;
+    }
 
-   // 저장 버튼 클릭 (모달에서 입력값을 저장)
-saveMarriageGiftButton.addEventListener('click', function () {
-    const fatherAmount = parseCurrency(fatherAmountInput.value || '0');
-    const motherAmount = parseCurrency(motherAmountInput.value || '0');
+    const diffInYears = diffInMilliseconds / (1000 * 60 * 60 * 24 * 365);
+    const holdingYears = parseFloat(diffInYears.toFixed(2)); // 소수점 2자리까지만 유지
+    const holdingYearsInt = Math.floor(holdingYears); // 소수점 버림하여 정수화
+    holdingYearsDisplay.value = `${holdingYearsInt} 년`; // UI에 정수화된 보유 기간 표시
 
-    // 결혼 공제 계산 (부와 모 각각의 최대 공제 한도)
-    const maxFatherExemption = 150000000; // 부 최대 공제 한도: 1억 5천만 원
-    const maxMotherExemption = 100000000; // 모 최대 공제 한도: 1억 원
+    // 양도차익 계산
+    const acquisitionPrice = parseInt(totalAcquisitionDisplay.textContent.replace(/[^0-9]/g, '') || '0', 10); // 취득가액
+    const expenses = parseInt(totalExpensesDisplay.textContent.replace(/[^0-9]/g, '') || '0', 10); // 필요경비
+    const transferPrice = parseInt(document.getElementById('transferPrice')?.value.replace(/,/g, '') || '0', 10); // 양도가액
+    const profit = transferPrice - acquisitionPrice - expenses;
 
-    // 각각의 결혼 공제 금액 계산
-    const fatherExemption = Math.min(fatherAmount, maxFatherExemption);
-    const motherExemption = Math.min(motherAmount, maxMotherExemption);
+    if (profit < 0) {
+        alert('양도차익이 0보다 작습니다. 입력값을 확인해주세요.');
+        return;
+    }
 
-    // 결혼 공제 값 저장
-    fatherGiftAmount = fatherExemption;
-    motherGiftAmount = motherExemption;
+    // 기본 세율 및 장기보유특별공제율 계산
+let taxRate = 0;
+let surcharge = 0;
+let longTermDeductionRate = 0;
+let longTermDeductionAmount = 0; // 장기보유특별공제 금액
 
-    // 사용자에게 결과 알림
-    alert(`결혼 공제 저장됨\n부: ${fatherGiftAmount.toLocaleString()} 원\n모: ${motherGiftAmount.toLocaleString()} 원`);
-    marriageGiftModal.style.display = 'none';
-});
+if (propertyTypeSelect.value === 'house') {
+    const regulatedArea = document.getElementById('regulatedArea').value === 'yes'; // 조정대상지역 여부
+    const singleHouseExemption = document.getElementById('singleHouseExemption').value === 'yes'; // 1세대 1주택 여부
+    const isMultiHouseOwner = document.getElementById('singleHouseExemption').value === 'no'; // 다주택 여부
 
-    // 닫기 버튼 클릭 이벤트
-closeMarriageGiftModal.addEventListener('click', function () {
-    marriageGiftModal.style.display = 'none';
-});
+    if (regulatedArea && isMultiHouseOwner) {
+        // 조정대상지역 다주택자는 공제율 0%
+        longTermDeductionRate = 0;
+    } else if (singleHouseExemption) {
+        // 1세대 1주택자: 보유기간에 따라 최대 80% 공제율 적용
+        longTermDeductionRate = holdingYearsInt >= 2 ? Math.min(holdingYearsInt * 0.04, 0.8) : 0;
+    } else {
+        // 다주택자 (조정대상지역 아님): 보유기간에 따라 최대 30% 공제율 적용
+        longTermDeductionRate = holdingYearsInt >= 3 ? Math.min(holdingYearsInt * 0.02, 0.3) : 0;
+    }
 
-// 결혼 공제 계산 함수
-function calculateMarriageExemption(fatherAmount, motherAmount) {
-    const maxFatherExemption = 100000000; // 부 최대 공제 한도: 1억 원
-    const maxMotherExemption = 100000000; // 모 최대 공제 한도: 1억 원
-    const totalMarriageExemptionLimit = 200000000; // 결혼 공제 총 한도: 2억 원
-
-    // 각각 부모의 공제 한도 계산
-    const fatherExemption = Math.min(fatherAmount, maxFatherExemption);
-    const motherExemption = Math.min(motherAmount, maxMotherExemption);
-
-    // 결혼 공제 총합이 2억 원을 초과하지 않도록 제한
-    const totalMarriageExemption = Math.min(fatherExemption + motherExemption, totalMarriageExemptionLimit);
-
-    return totalMarriageExemption;
+    // 기본 세율 및 중과세율 설정
+    taxRate = regulatedArea ? 0.2 : 0.1; // 기본 세율: 조정대상지역은 20%, 비조정대상지역은 10%
+    surcharge = regulatedArea ? 0.1 : 0; // 중과세율: 조정대상지역은 추가 10%, 비조정대상지역은 0%
+} else if (propertyTypeSelect.value === 'landForest') {
+    // 토지/임야의 경우
+    longTermDeductionRate = holdingYearsInt >= 3 ? Math.min(holdingYearsInt * 0.03, 0.3) : 0;
+    taxRate = 0.15; // 기본 세율 15%
+} else if (propertyTypeSelect.value === 'unregistered') {
+    // 미등기부동산의 경우
+    longTermDeductionRate = 0; // 미등기부동산은 장기보유특별공제 없음
+    taxRate = 0.7; // 고정 세율 70%
+} else if (propertyTypeSelect.value === 'others') {
+    // 기타 권리
+    longTermDeductionRate = 0;
+    taxRate = 0.2; // 기타 권리는 고정 세율 20%
 }
 
-// 최종 공제 계산 함수
-function calculateExemptions(totalGiftAmount, relationship) {
-    // 1. 관계 공제 적용
-    const relationshipExemption = getExemptionAmount(relationship);
+// 장기보유특별공제 금액 계산
+longTermDeductionAmount = profit * longTermDeductionRate;
 
-    // 2. 결혼 공제 적용
-    const fatherAmount = parseCurrency(document.getElementById('fatherAmountInput').value || '0');
-    const motherAmount = parseCurrency(document.getElementById('motherAmountInput').value || '0');
-    const marriageExemption = calculateMarriageExemption(fatherAmount, motherAmount);
+// 과세표준 계산 (장기보유특별공제 반영)
+let taxableProfit = profit - longTermDeductionAmount;
 
-    // 3. 총 공제 합산 (증여 금액 초과 방지)
-    const totalExemption = Math.min(totalGiftAmount, relationshipExemption + marriageExemption);
-
-    return { relationshipExemption, marriageExemption, totalExemption };
+// 비과세 조건 적용
+if (propertyTypeSelect.value === 'house' && singleHouseExemption === 'yes') {
+    if (holdingYearsInt >= 2) {
+        const taxExemptLimit = 1200000000;
+        if (transferPrice <= taxExemptLimit) {
+            taxableProfit = 0;
+        } else {
+            taxableProfit = Math.max(profit - (taxExemptLimit - acquisitionPrice), 0);
+        }
+    }
 }
 
-// 최종 세금 계산 함수
-function calculateFinalTax() {
-    const totalGiftAmount = getGiftAmount(); // 총 증여 금액
-    const relationship = document.getElementById('relationship').value;
+// 기본공제 적용 (과세표준에서 차감)
+const basicDeduction = propertyTypeSelect.value !== 'unregistered' ? 2500000 : 0; // 미등기 부동산 기본공제 없음
+let taxableProfitAfterDeduction = Math.max(taxableProfit - basicDeduction, 0); // taxableProfit에서 기본공제를 차감
 
-    // 공제 계산
-    const { relationshipExemption, marriageExemption, totalExemption } = calculateExemptions(totalGiftAmount, relationship);
+// 누진세율 구간 및 누진공제 설정
+const taxBrackets = [
+    { limit: 12000000, rate: 0.06, deduction: 0 },
+    { limit: 46000000, rate: 0.15, deduction: 1080000 },
+    { limit: 88000000, rate: 0.24, deduction: 5220000 },
+    { limit: 150000000, rate: 0.35, deduction: 14900000 },
+    { limit: 300000000, rate: 0.38, deduction: 19400000 },
+    { limit: 500000000, rate: 0.40, deduction: 25400000 },
+    { limit: Infinity, rate: 0.45, deduction: 45400000 }
+];
 
-    // 과세 금액 및 증여세 계산
-    const taxableAmount = Math.max(0, totalGiftAmount - totalExemption);
-    const giftTax = calculateGiftTax(taxableAmount);
+// 양도소득세 계산
+let rawTax = 0; // 양도소득세
+let remainingProfit = taxableProfitAfterDeduction; // 남은 과세표준
 
-    // 가산세 계산
-    const giftDate = document.getElementById('giftDate').value;
-    const submissionDate = document.getElementById('submissionDate').value;
-    const { penalty, message } = calculateLatePenalty(submissionDate, giftDate, giftTax);
+for (let i = 0; i < taxBrackets.length; i++) {
+    const bracket = taxBrackets[i];
+    const previousLimit = i === 0 ? 0 : taxBrackets[i - 1].limit; // 이전 구간의 상한
 
-    // 최종 세금 합산
-    const totalTax = giftTax + penalty;
-
-    // 결과 출력
-    document.getElementById('result').innerHTML = `
-        <h3>최종 계산 결과</h3>
-        <p>증여 금액: ${totalGiftAmount.toLocaleString()} 원</p>
-        <p>관계 공제: ${relationshipExemption.toLocaleString()} 원</p>
-        <p>결혼 공제: ${marriageExemption.toLocaleString()} 원</p>
-        <p>총 공제 금액: ${totalExemption.toLocaleString()} 원</p>
-        <p>과세 금액: ${taxableAmount.toLocaleString()} 원</p>
-        <p>증여세: ${giftTax.toLocaleString()} 원</p>
-        <p>가산세: ${penalty.toLocaleString()} 원 (${message})</p>
-        <p><strong>최종 납부세액: ${(totalTax).toLocaleString()} 원</strong></p>
-    `;
+    // 현재 구간에서 남은 금액 계산
+    if (remainingProfit <= 0) break; // 남은 금액이 없으면 종료
+    const taxableAmount = Math.min(bracket.limit - previousLimit, remainingProfit); // 현재 구간에서 과세할 금액
+    const taxForBracket = taxableAmount * bracket.rate; // 현재 구간의 세금 계산
+    rawTax += taxForBracket; // 세금 누적
+    remainingProfit -= taxableAmount; // 남은 금액 갱신
 }
 
-// 증여세 신고 버튼 클릭 이벤트
-document.getElementById('donationTaxButton').addEventListener('click', function () {
-    const giftDateContainer = document.getElementById('giftDateContainer');
-    const submissionDateContainer = document.getElementById('submissionDateContainer');
-    const extendedPeriodContainer = document.getElementById('extendedPeriodContainer');
+// 누진공제 적용
+const applicableDeduction = taxBrackets.find(bracket => taxableProfitAfterDeduction <= bracket.limit)?.deduction || 0;
+rawTax -= applicableDeduction;
 
-    // 숨겨진 입력 필드 토글 (보이기/숨기기)
-    const isVisible = giftDateContainer.style.display === 'block';
-    const newDisplay = isVisible ? 'none' : 'block';
+// 부가세 계산
+const educationTax = Math.floor(rawTax * 0.1); // 지방교육세 (10%)
+const ruralTax = Math.floor(rawTax * 0.2); // 농어촌특별세 (20%)
+const totalTax = rawTax + educationTax + ruralTax;
 
-    giftDateContainer.style.display = newDisplay;
-    submissionDateContainer.style.display = newDisplay;
-    extendedPeriodContainer.style.display = newDisplay;
-});
-document.getElementById('calculateButton').addEventListener('click', calculateFinalTax);
-});
-
-                          
+// 결과 출력
+document.getElementById('result').innerHTML = `
+    <h3>계산 결과</h3>
+    <p>보유 기간: ${holdingYearsInt} 년</p>
+    <p>장기보유특별공제율: ${(longTermDeductionRate * 100).toFixed(1)}%</p>
+    <p>양도차익: ${profit.toLocaleString()} 원</p>
+    <p>장기보유특별공제 금액: ${longTermDeductionAmount.toLocaleString()} 원</p>
+    <p>과세표준 (기본공제 전): ${taxableProfit.toLocaleString()} 원</p>
+    <p>기본공제: ${basicDeduction.toLocaleString()} 원</p>
+    <p>과세표준 (기본공제 후): ${taxableProfitAfterDeduction.toLocaleString()} 원</p>
+    <p>양도소득세: ${rawTax.toLocaleString()} 원</p>
+    <p>지방교육세: ${educationTax.toLocaleString()} 원</p>
+    <p>농어촌특별세: ${ruralTax.toLocaleString()} 원</p>
+    <p><strong>총 세금: ${totalTax.toLocaleString()} 원</strong></p>
+`;
+ });   
+}); // DOMContentLoaded 끝
