@@ -3,133 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>증여세 계산기 (2024년 기준)</title>
+    <title>취득세 계산기 (2024년 기준)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="calculator">
-        <h1>증여세 계산기 (2024년 기준)</h1>
-        <form id="taxForm">
-            <!-- 재산 유형 -->
+        <h1>취득세 계산기 (2024년 기준)</h1>
+        <form id="acquisitionForm">
+            <!-- 재산 유형 선택 -->
             <label for="assetType">재산 유형:</label>
             <select id="assetType">
-                <option value="cash" selected>현금</option>
-                <option value="realEstate">부동산</option>
-                <option value="stock">주식</option>
+                <option value="realEstate" selected>부동산</option>
+                <option value="vehicle">차량</option>
+                <option value="other">기타</option>
             </select>
-            
-            <!-- 재산 유형별 입력 필드 -->
-          <div id="additionalFields">
-    <!-- 현금 입력 -->
-    <div id="cashInputField" style="display: block;">
-        <label for="cashAmount">현금 금액 (원):</label>
-        <input type="text" id="cashAmount" placeholder="예: 10,000,000">
-    </div>
 
-    <!-- 부동산 입력 -->
-    <div id="realEstateInputField" style="display: none;">
-        <label for="realEstateValue">부동산 평가액 (원):</label>
-        <input type="text" id="realEstateValue" placeholder="예: 100,000,000">
-    </div>
+            <!-- 부동산 추가 옵션 -->
+            <div id="realEstateField" style="display: block;">
+                <label for="realEstateType">부동산 종류:</label>
+                <select id="realEstateType">
+                    <option value="residential1">1세대 1주택</option>
+                    <option value="residentialMulti">다주택</option>
+                    <option value="commercial">상업용</option>
+                    <option value="land">토지</option>
+                </select>
 
-    <!-- 주식 입력 -->
-    <div id="stockInputField" style="display: none;">
-        <label for="stockQuantity">주식 매수량:</label>
-        <input type="number" id="stockQuantity" placeholder="예: 100">
+                <!-- 금액 입력 필드 -->
+                <label for="realEstateValue">부동산 금액 (원):</label>
+                <input type="text" id="realEstateValue" placeholder="예: 100,000,000">
+            </div>
 
-        <label for="stockPrice">주식 1주당 가격 (원):</label>
-        <input type="text" id="stockPrice" placeholder="예: 10,000">
+            <!-- 차량 추가 옵션 -->
+            <div id="vehicleField" style="display: none;">
+                <label for="vehiclePrice">차량 금액 (원):</label>
+                <input type="text" id="vehiclePrice" placeholder="예: 30,000,000">
+                <label for="vehicleType">차량 종류:</label>
+                <select id="vehicleType">
+                    <option value="standard">일반 차량</option>
+                    <option value="compact">경차</option>
+                    <option value="used">중고차</option>
+                </select>
+            </div>
 
-        <!-- 추가된 총 금액 필드 -->
-        <label for="stockTotal">총 금액 (원):</label>
-        <input type="text" id="stockTotal" readonly placeholder="자동 계산됨">
-    </div>
-</div>
+            <!-- 기타 자산 입력 -->
+            <div id="otherField" style="display: none;">
+                <label for="otherAssetValue">기타 자산 금액 (원):</label>
+                <input type="text" id="otherAssetValue" placeholder="예: 50,000,000">
+            </div>
 
-            <!-- 관계 선택 -->
-<label for="relationship">관계:</label>
-<select id="relationship">
-    <option value="adultChild">직계비속(성년 자녀) - 공제 한도: 50,000,000원</option>
-    <option value="minorChild">직계비속(미성년 자녀) - 공제 한도: 20,000,000원</option>
-    <option value="spouse">배우자 - 공제 한도: 600,000,000원</option>
-    <option value="sonInLawDaughterInLaw">사위/며느리 - 공제 한도: 50,000,000원</option>
-    <option value="other">타인(친구, 친인척 등) - 공제 한도: 10,000,000원</option>
-</select>
+            <!-- 버튼 4개 -->
+            <button type="button" class="action-btn" id="saleButton">매매취득</button>
+            <button type="button" class="action-btn" id="giftButton">증여취득</button>
+            <button type="button" class="action-btn" id="inheritanceButton">상속취득</button>
+            <button type="button" class="action-btn" id="originalButton">원시취득</button>
 
-             <!-- 결혼 증여 입력 버튼 -->
-<button id="marriageGiftButton" type="button">결혼 증여</button>
+          <!-- 매매취득 모달 -->
+<div id="saleModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>매매 취득 세부사항</h3>
 
-<!-- 결혼 증여 입력 모달 -->
-<div id="marriageGiftModalOverlay" style="display: none;"></div>
-<div id="marriageGiftModal" style="display: none;">
-    <div id="modalContent">
-        <h3>결혼 증여 공제 입력</h3>
+        <!-- 대분류 선택 -->
+        <label for="saleCategory">대분류 선택:</label>
+        <select id="saleCategory">
+            <option value="singleHousehold">1세대 1주택</option>
+            <option value="multiHousehold">다주택</option>
+            <option value="commercial">상가</option>
+            <option value="vehicle">차량</option>
+            <option value="other">기타 자산</option>
+        </select>
 
-        <!-- 부모 금액 입력 -->
-        <label for="fatherAmountInput">부 (아버지):</label>
-        <input type="text" id="fatherAmountInput" class="amount-input" placeholder="예: 2,000,000">
-
-        <label for="motherAmountInput">모 (어머니):</label>
-        <input type="text" id="motherAmountInput" class="amount-input" placeholder="예: 2,000,000">
-
-        <!-- 남은 금액 표시 -->
-        <h4>남은 금액:</h4>
-        <p id="remainingAmount">0 원</p>
-
-        <!-- 모달 버튼 -->
-        <div class="modalButtons">
-            <button id="saveMarriageGiftButton" type="button" class="modal-button">저장</button>
-            <button id="closeMarriageGiftModal" type="button" class="modal-button">닫기</button>
+        <!-- 하부 선택: 1세대 1주택 및 다주택 -->
+        <div id="singleOrMultiOptions" style="display: none;">
+            <label for="isAdjustedArea">조정대상 지역 여부:</label>
+            <select id="isAdjustedArea">
+                <option value="yes">예</option>
+                <option value="no">아니오</option>
+            </select>
         </div>
+
+        <!-- 차량 선택 -->
+        <div id="vehicleOptions" style="display: none;">
+            <label for="vehicleType">차량 종류:</label>
+            <select id="vehicleType">
+                <option value="compact">경차</option>
+                <option value="standard">일반 차량</option>
+                <option value="used">중고차</option>
+            </select>
+        </div>
+
+        <!-- 기타 자산 안내 -->
+        <div id="otherOptions" style="display: none;">
+            <p>기타 자산은 추가 조건이 필요하지 않습니다.</p>
+        </div>
+
+        <!-- 확인 및 닫기 버튼 -->
+        <button type="button" id="confirmSaleType">확인</button>
+        <button type="button" id="closeSaleModal" style="background-color: gray; margin-top: 10px;">닫기</button>
     </div>
 </div>
-             <!-- 과거 증여 금액 -->
-<div id="previousGifts"></div>
-<button type="button" id="addGiftButton">과거 증여</button>  
-         
-            <!-- 추가: 증여세 신고 버튼 -->
-<button type="button" id="donationTaxButton">신고 하기</button>
-<!-- 추가: 증여세 신고 결과를 표시할 섹션 -->
-<div id="donationTaxResult" style="margin-top: 20px; display: none;">
-    <!-- 결과가 여기에 표시됩니다 -->
-</div>
 
-<!-- 증여일 -->
-<div id="giftDateContainer" style="display: none;">
-    <label for="giftDate">증여일:</label>
-    <input type="date" id="giftDate" placeholder="연도-월-일">
-    <p>증여일은 증여 계약서 서명일 또는 재산 이전일입니다.</p>
-</div>
+               <!-- 증여취득 모달 -->
+<div id="giftModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>증여 취득 종류 선택</h3>
 
-<!-- 신고일 -->
-<div id="submissionDateContainer" style="display: none;">
-    <label for="submissionDate">신고일:</label>
-    <input type="date" id="submissionDate" placeholder="연도-월-일">
-    <p>신고일은 증여세 신고 접수일을 기준으로 입력하세요.</p>
-</div>
+        <!-- 증여 종류 선택 -->
+        <label for="giftType">증여 종류:</label>
+        <select id="giftType">
+            <option value="general">일반 증여</option>
+            <option value="corporate">법인 증여</option>
+        </select>
 
-<!-- 신고 기한 -->
-<div id="extendedPeriodContainer" style="display: none;">
-    <label for="extendedPeriod">신고 기한:</label>
-    <select id="extendedPeriod">
-        <option value="false" selected>기본 (3개월)</option>
-        <option value="true">연장 (6개월)</option>
-    </select>
-    <p>신고 기한이 연장되는 경우(부동산, 주식 등), 연장을 선택하세요.</p>
+        <!-- 확인 및 닫힘 버튼 -->
+        <div class="button-group">
+    <button type="button" class="confirm-btn" id="confirmGiftType">확인</button>
+    <button type="button" class="close-btn" id="closeGiftModal">닫기</button>
 </div>
+    </div>
+</div>
+ 
+                  <!-- 상속취득 모달 -->
+<div id="inheritanceModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>상속 취득 세부사항</h3>
 
+        <!-- 상속 종류 선택 -->
+        <label for="inheritanceType">상속 종류:</label>
+        <select id="inheritanceType">
+            <option value="general">일반 상속</option>
+            <option value="corporate">법인 상속</option>
+        </select>
+
+        <!-- 조정 대상 지역 여부 -->
+        <label for="isAdjustedAreaInheritance">조정 대상 지역 여부:</label>
+        <select id="isAdjustedAreaInheritance">
+            <option value="yes">예</option>
+            <option value="no">아니오</option>
+        </select>
+
+        <!-- 확인 버튼 -->
+        <button type="button" class="confirm-btn" id="confirmInheritanceType">확인</button>
+        <!-- 닫기 버튼 -->
+        <button type="button" class="close-btn" id="closeInheritanceModal">닫기</button>
+    </div>
+</div>
+           
             <!-- 계산하기 버튼 -->
-          <button type="button" id="calculateButton">계산하기</button>
+            <button type="button" id="calculateButton" style="margin-top: 15px;">계산하기</button>
         </form>
-
+          
         <!-- 결과 -->
         <div id="result"></div>
     </div>
-    <!-- 추가: 상속세 계산기와 취득세 계산기 버튼 섹션 -->
-<!-- 계산기 끝 -->
-<div id="extraTaxButtons">
-    <button type="button" id="acquisitionTaxButton">취득세 계산기</button>
-    </div>
-<script src="script.js"></script>
+
+    <script src="script.js"></script>
 </body>
 </html>
