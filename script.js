@@ -89,7 +89,7 @@ function calculateGiftTax(taxableAmount) {
         { limit: Infinity, rate: 0.5, deduction: 460000000 }
     ];
 
-    let tax = 0; // 총 세금
+    let tax = 0; // 누적 세금
     let previousLimit = 0;
 
     console.log(`Starting tax calculation for taxable amount: ${taxableAmount}`); // 시작 로그
@@ -98,25 +98,25 @@ function calculateGiftTax(taxableAmount) {
         console.log(`Checking bracket: Limit = ${bracket.limit}, Rate = ${bracket.rate}, Deduction = ${bracket.deduction}`);
         
         if (taxableAmount > bracket.limit) {
-            // 현재 구간보다 높은 금액은 전체 구간 세율 적용
+            // 현재 구간 전체에 세율 적용
             const segmentTax = (bracket.limit - previousLimit) * bracket.rate;
-            tax += segmentTax;
+            tax += segmentTax; // 누적 세금에 추가
             console.log(`Applied bracket: ${(bracket.limit - previousLimit)} * ${bracket.rate} = ${segmentTax}`);
             previousLimit = bracket.limit;
         } else {
-            // 마지막 구간: 과세표준에 세율 적용
+            // 마지막 구간에 세율 적용
             const segmentTax = (taxableAmount - previousLimit) * bracket.rate;
-            tax += segmentTax;
+            tax += segmentTax; // 누적 세금에 추가
             console.log(`Final bracket applied: ${(taxableAmount - previousLimit)} * ${bracket.rate} = ${segmentTax}`);
             
-            // 누진공제 한 번만 적용
+            // 누진공제 마지막에 한 번만 적용
             tax -= bracket.deduction;
             console.log(`Deduction applied: -${bracket.deduction}, Tax now: ${tax}`);
             break;
         }
     }
 
-    console.log(`Final calculated tax: ${Math.max(tax, 0)}`); // 결과 로그
+    console.log(`Final calculated tax: ${Math.max(tax, 0)}`); // 최종 결과 로그
     return Math.max(tax, 0); // 세금은 음수가 될 수 없음
 }
 
