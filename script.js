@@ -358,4 +358,29 @@ document.getElementById('calculateButton').addEventListener('click', calculateFi
 
 });
 
+// 메시지 리스너 추가
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log("Message received:", message);
+
+    if (message.type === "calculateTax") {
+        try {
+            // 세금 계산
+            const taxResult = calculateGiftTax(message.taxableAmount);
+            console.log("Tax calculation result:", taxResult);
+
+            // 성공 응답 반환
+            sendResponse({ success: true, tax: taxResult });
+        } catch (error) {
+            console.error("Error during tax calculation:", error);
+
+            // 에러 응답 반환
+            sendResponse({ success: false, error: error.message });
+        }
+
+        return true; // 비동기 응답 허용
+    }
+
+    console.warn("Unknown message type received:", message.type);
+    sendResponse({ success: false, message: "Unknown message type" });
+});
                           
