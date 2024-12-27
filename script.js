@@ -91,27 +91,27 @@ function calculateGiftTax(taxableAmount) {
 
     let tax = 0;
     let previousLimit = 0;
-    let deductionApplied = false; // 누진공제 한 번만 적용
+
+    console.log(`Starting tax calculation for taxable amount: ${taxableAmount}`); // 시작 로그
 
     for (const bracket of taxBrackets) {
+        console.log(`Checking bracket: Limit = ${bracket.limit}, Rate = ${bracket.rate}, Deduction = ${bracket.deduction}`);
+        
         if (taxableAmount > bracket.limit) {
-            // 현재 구간보다 높은 금액은 구간 전체를 세율 적용
             tax += (bracket.limit - previousLimit) * bracket.rate;
+            console.log(`Applied bracket: ${(bracket.limit - previousLimit)} * ${bracket.rate} = ${(bracket.limit - previousLimit) * bracket.rate}`);
             previousLimit = bracket.limit;
         } else {
-            // 과세표준에 세율 적용
             tax += (taxableAmount - previousLimit) * bracket.rate;
-
-            // 누진공제를 한 번만 적용
-            if (!deductionApplied) {
-                tax -= bracket.deduction;
-                deductionApplied = true;
-            }
+            console.log(`Final bracket applied: ${(taxableAmount - previousLimit)} * ${bracket.rate} = ${(taxableAmount - previousLimit) * bracket.rate}`);
+            tax -= bracket.deduction;
+            console.log(`Deduction applied: -${bracket.deduction}, Tax now: ${tax}`);
             break;
         }
     }
 
-    return Math.max(tax, 0); // 세금은 음수가 될 수 없음
+    console.log(`Final calculated tax: ${Math.max(tax, 0)}`); // 결과 로그
+    return Math.max(tax, 0);
 }
 
 // 가산세 계산 로직
