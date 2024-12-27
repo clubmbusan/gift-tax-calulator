@@ -154,9 +154,13 @@ document.addEventListener('DOMContentLoaded', function () {
         newGiftEntry.style.marginTop = '10px'; // 간격 추가
 
         newGiftEntry.innerHTML = `
-            <input type="text" name="pastGiftAmount" placeholder="금액 입력 (원)" class="amount-input" style="width: 150px;">
+            <input type="text" id="pastGiftAmount" name="pastGiftAmount" 
+                placeholder="금액 입력 (원)" class="amount-input" style="width: 150px;">
             <input type="date" name="pastGiftDate" class="date-input" style="margin-left: 10px;">
-            <button type="button" class="remove-gift-button" style="background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px; margin-left: 10px;">삭제</button>
+            <button type="button" class="remove-gift-button" style="
+                background-color: #f44336; color: white; border: none; 
+                padding: 5px 10px; cursor: pointer; border-radius: 5px; 
+                margin-left: 10px;">삭제</button>
         `;
 
         // 삭제 버튼 동작 추가
@@ -166,6 +170,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         container.appendChild(newGiftEntry);
+
+        // 새로 생성된 필드에도 콤마 처리 이벤트 연결
+        const pastGiftAmountInput = newGiftEntry.querySelector('input[name="pastGiftAmount"]');
+        pastGiftAmountInput.addEventListener('input', function () {
+            const rawValue = pastGiftAmountInput.value.replace(/[^0-9]/g, ''); // 숫자 외 문자 제거
+            pastGiftAmountInput.value = parseInt(rawValue || '0', 10).toLocaleString();
+        });
     });
 });
 
