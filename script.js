@@ -13,7 +13,7 @@ const applicableFields = [
     'realEstateValue',     // 부동산 입력 필드
     'stockPrice',          // 주식 가격 입력 필드
     'fatherAmountInput',   // 모달: 부 금액 입력
-    'motherAmountInput'    // 모달: 모 금액 입력
+    'motherAmountInput',    // 모달: 모 금액 입력
    'pastGiftAmount'       // 과거 증여 금액 입력 필드
 ];
 
