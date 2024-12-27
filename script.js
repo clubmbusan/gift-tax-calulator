@@ -91,37 +91,38 @@ function calculateGiftTax(taxableAmount) {
 
     let tax = 0; // 누적 세금
     let previousLimit = 0;
-    let appliedDeduction = 0; // 적용된 누진 공제 금액 저장
+    let appliedDeduction = 0; // 누진 공제
+    const breakdown = []; // 구간별 계산 결과 저장
 
     console.log(`Starting tax calculation for taxable amount: ${taxableAmount}`); // 시작 로그
 
     for (const bracket of taxBrackets) {
         console.log(`Checking bracket: Limit = ${bracket.limit}, Rate = ${bracket.rate}, Deduction = ${bracket.deduction}`);
-        
+
         if (taxableAmount > bracket.limit) {
             // 현재 구간 전체에 세율 적용
             const segmentTax = (bracket.limit - previousLimit) * bracket.rate;
             tax += segmentTax; // 누적 세금에 추가
+            breakdown.push({ amount: bracket.limit - previousLimit, rate: bracket.rate, tax: segmentTax });
             console.log(`Applied bracket: ${(bracket.limit - previousLimit)} * ${bracket.rate} = ${segmentTax}`);
             previousLimit = bracket.limit;
         } else {
             // 마지막 구간에 세율 적용
             const segmentTax = (taxableAmount - previousLimit) * bracket.rate;
             tax += segmentTax; // 누적 세금에 추가
+            breakdown.push({ amount: taxableAmount - previousLimit, rate: bracket.rate, tax: segmentTax });
             console.log(`Final bracket applied: ${(taxableAmount - previousLimit)} * ${bracket.rate} = ${segmentTax}`);
             
-            // 누진 공제 적용
-            appliedDeduction = bracket.deduction; // 누진 공제 금액 저장
+            // 누진 공제 마지막에 한 번만 적용
+            appliedDeduction = bracket.deduction;
             tax -= appliedDeduction;
-            console.log(`Deduction applied: -${appliedDeduction}, Tax now: ${tax}`);
+            console.log(`Deduction applied: -${bracket.deduction}, Tax now: ${tax}`);
             break;
         }
     }
 
     console.log(`Final calculated tax: ${Math.max(tax, 0)}`); // 최종 결과 로그
-
-    // 누진 공제 금액과 세금을 함께 반환
-    return { tax: Math.max(tax, 0), appliedDeduction }; // 세금은 음수가 될 수 없음
+    return { tax: Math.max(tax, 0), breakdown, appliedDeduction }; // 결과 반환
 }
 
 // 가산세 계산 로직
@@ -319,7 +320,7 @@ function calculateFinalTax() {
 
     // 과세 금액 계산
     const taxableAmount = Math.max(0, totalGiftAmount - currentExemption); // 과세표준
-    const { tax: giftTax, appliedDeduction } = calculateGiftTax(taxableAmount); // 증여세 계산 및 누진 공제 금액
+    const { tax: giftTax, breakdown, appliedDeduction } = calculateGiftTax(taxableAmount); // 증여세 계산 및 누진 공제 금액
 
     // 가산세 계산
     const giftDate = document.getElementById('giftDate').value;
@@ -329,6 +330,11 @@ function calculateFinalTax() {
     // 최종 세금 합산
     const totalTax = giftTax + penalty;
 
+    // 구간별 세율 계산 결과 생성
+    const breakdownHTML = breakdown.map(b => `
+        <p>${b.amount.toLocaleString()} 원 × ${(b.rate * 100).toFixed(0)}% = ${b.tax.toLocaleString()} 원</p>
+    `).join('');
+
     // 결과 출력
     document.getElementById('result').innerHTML = `
         <h3>최종 계산 결과</h3>
@@ -336,6 +342,8 @@ function calculateFinalTax() {
         <p>과거 증여 금액 합계: ${totalPastGiftAmount.toLocaleString()} 원</p>
         <p>관계 공제 (과거 차감 후): ${currentExemption.toLocaleString()} 원</p>
         <p>과세 금액: ${taxableAmount.toLocaleString()} 원</p>
+        <h4>구간별 세율 적용:</h4>
+        ${breakdownHTML}
         <p>적용된 누진 공제: ${appliedDeduction.toLocaleString()} 원</p>
         <p>증여세: ${giftTax.toLocaleString()} 원</p>
         <p>가산세: ${penalty.toLocaleString()} 원 (${message})</p>
