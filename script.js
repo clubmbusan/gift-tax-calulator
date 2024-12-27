@@ -91,6 +91,7 @@ function calculateGiftTax(taxableAmount) {
 
     let tax = 0; // 누적 세금
     let previousLimit = 0;
+    let appliedDeduction = 0; // 적용된 누진 공제 금액 저장
 
     console.log(`Starting tax calculation for taxable amount: ${taxableAmount}`); // 시작 로그
 
@@ -109,15 +110,18 @@ function calculateGiftTax(taxableAmount) {
             tax += segmentTax; // 누적 세금에 추가
             console.log(`Final bracket applied: ${(taxableAmount - previousLimit)} * ${bracket.rate} = ${segmentTax}`);
             
-            // 누진공제 마지막에 한 번만 적용
-            tax -= bracket.deduction;
-            console.log(`Deduction applied: -${bracket.deduction}, Tax now: ${tax}`);
+            // 누진 공제 적용
+            appliedDeduction = bracket.deduction; // 누진 공제 금액 저장
+            tax -= appliedDeduction;
+            console.log(`Deduction applied: -${appliedDeduction}, Tax now: ${tax}`);
             break;
         }
     }
 
     console.log(`Final calculated tax: ${Math.max(tax, 0)}`); // 최종 결과 로그
-    return Math.max(tax, 0); // 세금은 음수가 될 수 없음
+
+    // 누진 공제 금액과 세금을 함께 반환
+    return { tax: Math.max(tax, 0), appliedDeduction }; // 세금은 음수가 될 수 없음
 }
 
 // 가산세 계산 로직
