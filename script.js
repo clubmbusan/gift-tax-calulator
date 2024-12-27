@@ -275,15 +275,27 @@ function calculateExemptions(totalGiftAmount, relationship) {
     // 1. 관계 공제 적용
     const relationshipExemption = getExemptionAmount(relationship);
 
-    // 2. 결혼 공제 적용
+    // 2. 과거 증여 금액 합계 계산
+    const pastGiftAmounts = document.getElementsByName('pastGiftAmount');
+    let totalPastGiftAmount = 0;
+
+    for (const input of pastGiftAmounts) {
+        const pastAmount = parseCurrency(input.value || '0'); // 콤마 제거 후 숫자로 변환
+        totalPastGiftAmount += pastAmount;
+    }
+
+    // 3. 관계 공제에서 과거 공제 차감
+    const currentExemption = Math.max(0, relationshipExemption - totalPastGiftAmount);
+
+    // 4. 결혼 공제 적용
     const fatherAmount = parseCurrency(document.getElementById('fatherAmountInput').value || '0');
     const motherAmount = parseCurrency(document.getElementById('motherAmountInput').value || '0');
     const marriageExemption = calculateMarriageExemption(fatherAmount, motherAmount);
 
-    // 3. 총 공제 합산 (증여 금액 초과 방지)
-    const totalExemption = Math.min(totalGiftAmount, relationshipExemption + marriageExemption);
+    // 5. 총 공제 합산 (증여 금액 초과 방지)
+    const totalExemption = Math.min(totalGiftAmount, currentExemption + marriageExemption);
 
-    return { relationshipExemption, marriageExemption, totalExemption };
+    return { currentExemption, totalPastGiftAmount, marriageExemption, totalExemption };
 }
 
 // 최종 세금 계산 함수
