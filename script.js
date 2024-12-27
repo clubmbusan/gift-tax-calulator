@@ -91,19 +91,27 @@ function calculateGiftTax(taxableAmount) {
 
     let tax = 0;
     let previousLimit = 0;
+    let deductionApplied = false; // 누진공제 한 번만 적용
 
     for (const bracket of taxBrackets) {
         if (taxableAmount > bracket.limit) {
+            // 현재 구간보다 높은 금액은 구간 전체를 세율 적용
             tax += (bracket.limit - previousLimit) * bracket.rate;
             previousLimit = bracket.limit;
         } else {
+            // 과세표준에 세율 적용
             tax += (taxableAmount - previousLimit) * bracket.rate;
-            tax -= bracket.deduction;
+
+            // 누진공제를 한 번만 적용
+            if (!deductionApplied) {
+                tax -= bracket.deduction;
+                deductionApplied = true;
+            }
             break;
         }
     }
 
-    return Math.max(tax, 0);
+    return Math.max(tax, 0); // 세금은 음수가 될 수 없음
 }
 
 // 가산세 계산 로직
