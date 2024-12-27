@@ -272,7 +272,7 @@ function calculateMarriageExemption(fatherAmount, motherAmount) {
 
 // 최종 공제 계산 함수
 function calculateExemptions(totalGiftAmount, relationship) {
-    // 1. 관계 공제 적용
+    // 1. 관계 공제 한도
     const relationshipExemption = getExemptionAmount(relationship);
 
     // 2. 과거 증여 금액 합계 계산
@@ -284,18 +284,11 @@ function calculateExemptions(totalGiftAmount, relationship) {
         totalPastGiftAmount += pastAmount;
     }
 
-    // 3. 관계 공제에서 과거 공제 차감
+    // 3. 관계 공제에서 과거 증여 공제 차감
     const currentExemption = Math.max(0, relationshipExemption - totalPastGiftAmount);
 
-    // 4. 결혼 공제 적용
-    const fatherAmount = parseCurrency(document.getElementById('fatherAmountInput').value || '0');
-    const motherAmount = parseCurrency(document.getElementById('motherAmountInput').value || '0');
-    const marriageExemption = calculateMarriageExemption(fatherAmount, motherAmount);
-
-    // 5. 총 공제 합산 (증여 금액 초과 방지)
-    const totalExemption = Math.min(totalGiftAmount, currentExemption + marriageExemption);
-
-    return { currentExemption, totalPastGiftAmount, marriageExemption, totalExemption };
+    // 과거 공제 차감 결과 반환
+    return { currentExemption, totalPastGiftAmount };
 }
 
 // 최종 세금 계산 함수
@@ -304,11 +297,11 @@ function calculateFinalTax() {
     const relationship = document.getElementById('relationship').value;
 
     // 공제 계산
-    const { currentExemption, totalPastGiftAmount, marriageExemption, totalExemption } = calculateExemptions(totalGiftAmount, relationship);
+    const { currentExemption, totalPastGiftAmount } = calculateExemptions(totalGiftAmount, relationship);
 
     // 과세 금액 계산
-    const taxableAmount = Math.max(0, totalGiftAmount - totalExemption);
-    const giftTax = calculateGiftTax(taxableAmount);
+    const taxableAmount = Math.max(0, totalGiftAmount - currentExemption); // 과세표준
+    const giftTax = calculateGiftTax(taxableAmount); // 증여세 계산
 
     // 가산세 계산
     const giftDate = document.getElementById('giftDate').value;
@@ -324,8 +317,6 @@ function calculateFinalTax() {
         <p>총 증여 금액: ${totalGiftAmount.toLocaleString()} 원</p>
         <p>과거 증여 금액 합계: ${totalPastGiftAmount.toLocaleString()} 원</p>
         <p>관계 공제 (과거 차감 후): ${currentExemption.toLocaleString()} 원</p>
-        <p>결혼 공제: ${marriageExemption.toLocaleString()} 원</p>
-        <p>총 공제 금액: ${totalExemption.toLocaleString()} 원</p>
         <p>과세 금액: ${taxableAmount.toLocaleString()} 원</p>
         <p>증여세: ${giftTax.toLocaleString()} 원</p>
         <p>가산세: ${penalty.toLocaleString()} 원 (${message})</p>
@@ -347,7 +338,10 @@ document.getElementById('donationTaxButton').addEventListener('click', function 
     submissionDateContainer.style.display = newDisplay;
     extendedPeriodContainer.style.display = newDisplay;
 });
+
+// 계산 버튼 이벤트
 document.getElementById('calculateButton').addEventListener('click', calculateFinalTax);
+
 });
 
                           
