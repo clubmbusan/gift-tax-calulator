@@ -319,7 +319,7 @@ function calculateFinalTax() {
 
     // 과세 금액 계산
     const taxableAmount = Math.max(0, totalGiftAmount - currentExemption); // 과세표준
-    const giftTax = calculateGiftTax(taxableAmount); // 증여세 계산
+    const { tax: giftTax, appliedDeduction } = calculateGiftTax(taxableAmount); // 증여세 계산 및 누진 공제 금액
 
     // 가산세 계산
     const giftDate = document.getElementById('giftDate').value;
@@ -336,6 +336,7 @@ function calculateFinalTax() {
         <p>과거 증여 금액 합계: ${totalPastGiftAmount.toLocaleString()} 원</p>
         <p>관계 공제 (과거 차감 후): ${currentExemption.toLocaleString()} 원</p>
         <p>과세 금액: ${taxableAmount.toLocaleString()} 원</p>
+        <p>적용된 누진 공제: ${appliedDeduction.toLocaleString()} 원</p>
         <p>증여세: ${giftTax.toLocaleString()} 원</p>
         <p>가산세: ${penalty.toLocaleString()} 원 (${message})</p>
         <p><strong>최종 납부세액: ${(totalTax).toLocaleString()} 원</strong></p>
