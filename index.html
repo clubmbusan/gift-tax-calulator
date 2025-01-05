@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>증여세 계산기 (2024년 기준)</title>
+    <title>증여세 계산기 (2025년 기준)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="calculator">
-        <h1>증여세 계산기 (2024년 기준)</h1>
+        <h1>증여세 계산기 (2025년 기준)</h1>
         <form id="taxForm">
             <!-- 재산 유형 -->
             <label for="assetType">재산 유형:</label>
@@ -44,17 +44,27 @@
         <label for="stockTotal">총 금액 (원):</label>
         <input type="text" id="stockTotal" readonly placeholder="자동 계산됨">
     </div>
+          
+              <!-- 청년 증여 여부 드롭다운 -->
+  <div id="youthCheck">
+      <label for="isYouthDropdown">청년 증여 여부:</label>
+      <select id="isYouthDropdown" name="isYouthDropdown">
+         <option value="none" selected>선택해 주세요</option>
+         <option value="yes">청년 (만 20~29세)</option>
+         <option value="no">해당 없음</option>
+     </select>
+  </div>
 </div>
-
+                      
             <!-- 관계 선택 -->
-<label for="relationship">관계:</label>
-<select id="relationship">
-    <option value="adultChild">직계비속(성년 자녀) - 공제 한도: 50,000,000원</option>
-    <option value="minorChild">직계비속(미성년 자녀) - 공제 한도: 20,000,000원</option>
-    <option value="spouse">배우자 - 공제 한도: 600,000,000원</option>
-    <option value="sonInLawDaughterInLaw">사위/며느리 - 공제 한도: 50,000,000원</option>
-    <option value="other">타인(친구, 친인척 등) - 공제 한도: 10,000,000원</option>
-</select>
+   <label for="relationship">관계:</label>
+   <select id="relationship">
+       <option value="adultChild">직계비속(성년 자녀) - 공제 한도: 100,000,000원</option>
+       <option value="minorChild">직계비속(미성년 자녀) - 공제 한도: 25,000,000원</option>
+       <option value="spouse">배우자 - 공제 한도: 700,000,000원</option>
+       <option value="sonInLawDaughterInLaw">사위/며느리 - 공제 한도: 50,000,000원</option>
+       <option value="other">타인(친구, 친인척 등) - 공제 한도: 10,000,000원</option>
+   </select>
 
              <!-- 결혼 증여 입력 버튼 -->
 <button id="marriageGiftButton" type="button">결혼 증여</button>
