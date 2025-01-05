@@ -13,8 +13,7 @@ const applicableFields = [
     'realEstateValue',     // 부동산 입력 필드
     'stockPrice',          // 주식 가격 입력 필드
     'fatherAmountInput',   // 모달: 부 금액 입력
-    'motherAmountInput',    // 모달: 모 금액 입력
-   'pastGiftAmount'       // 과거 증여 금액 입력 필드
+    'motherAmountInput'    // 모달: 모 금액 입력
 ];
 
     // 콤마 적용 여부 확인
@@ -53,9 +52,9 @@ document.addEventListener('DOMContentLoaded', function () {
 // 관계별 공제 한도 계산
 function getExemptionAmount(relationship) {
     const exemptions = {
-        'adultChild': 50000000,       // 성년 자녀: 5천만 원
-        'minorChild': 20000000,       // 미성년 자녀: 2천만 원
-        'spouse': 600000000,          // 배우자: 6억 원
+        'adultChild': 100000000,       // 성년 자녀: 1억 원
+        'minorChild': 25000000,       // 미성년 자녀: 2,500만 원
+        'spouse': 700000000,          // 배우자: 7억 원
         'sonInLawDaughterInLaw': 50000000, // 사위/며느리: 5천만 원
         'other': 10000000             // 타인: 1천만 원
     };
@@ -79,51 +78,62 @@ function getGiftAmount() {
     return giftAmount;
 }
 
-// 누진세 계산
+// 누진세 계산 함수 (청년 여부 상관없이 계산)
 function calculateGiftTax(taxableAmount) {
     const taxBrackets = [
-        { limit: 100000000, rate: 0.1, deduction: 0 },
-        { limit: 500000000, rate: 0.2, deduction: 10000000 },
-        { limit: 1000000000, rate: 0.3, deduction: 60000000 },
-        { limit: 3000000000, rate: 0.4, deduction: 160000000 },
-        { limit: Infinity, rate: 0.5, deduction: 460000000 }
+        { limit: 200000000, rate: 0.1, deduction: 0 }, // 2억 이하
+        { limit: 500000000, rate: 0.2, deduction: 20000000 }, // 2억 초과 ~ 5억 이하
+        { limit: 1000000000, rate: 0.3, deduction: 70000000 }, // 5억 초과 ~ 10억 이하
+        { limit: 2000000000, rate: 0.4, deduction: 170000000 }, // 10억 초과 ~ 20억 이하
+        { limit: Infinity, rate: 0.45, deduction: 370000000 } // 20억 초과
     ];
 
-    let tax = 0; // 누적 세금
+    let tax = 0;
     let previousLimit = 0;
-    let appliedDeduction = 0; // 누진 공제
-    const breakdown = []; // 구간별 계산 결과 저장
-
-    console.log(`Starting tax calculation for taxable amount: ${taxableAmount}`); // 시작 로그
 
     for (const bracket of taxBrackets) {
-        console.log(`Checking bracket: Limit = ${bracket.limit}, Rate = ${bracket.rate}, Deduction = ${bracket.deduction}`);
-
         if (taxableAmount > bracket.limit) {
-            // 현재 구간 전체에 세율 적용
-            const segmentTax = (bracket.limit - previousLimit) * bracket.rate;
-            tax += segmentTax; // 누적 세금에 추가
-            breakdown.push({ amount: bracket.limit - previousLimit, rate: bracket.rate, tax: segmentTax });
-            console.log(`Applied bracket: ${(bracket.limit - previousLimit)} * ${bracket.rate} = ${segmentTax}`);
+            tax += (bracket.limit - previousLimit) * bracket.rate;
             previousLimit = bracket.limit;
         } else {
-            // 마지막 구간에 세율 적용
-            const segmentTax = (taxableAmount - previousLimit) * bracket.rate;
-            tax += segmentTax; // 누적 세금에 추가
-            breakdown.push({ amount: taxableAmount - previousLimit, rate: bracket.rate, tax: segmentTax });
-            console.log(`Final bracket applied: ${(taxableAmount - previousLimit)} * ${bracket.rate} = ${segmentTax}`);
-            
-            // 누진 공제 마지막에 한 번만 적용
-            appliedDeduction = bracket.deduction;
-            tax -= appliedDeduction;
-            console.log(`Deduction applied: -${bracket.deduction}, Tax now: ${tax}`);
+            tax += (taxableAmount - previousLimit) * bracket.rate;
+            tax -= bracket.deduction; // 누진 공제 적용
             break;
         }
     }
 
-    console.log(`Final calculated tax: ${Math.max(tax, 0)}`); // 최종 결과 로그
-    return { tax: Math.max(tax, 0), breakdown, appliedDeduction }; // 결과 반환
+    return Math.max(tax, 0); // 음수 방지
 }
+
+// 청년 감면 적용 (누진 공제 반영)
+function applyYouthReduction(taxableAmount, originalGiftTax) {
+    const taxBrackets = [
+        { limit: 200000000, rate: 0.1 }, // 2억 이하
+        { limit: 500000000, rate: 0.2 }, // 2억 초과 ~ 5억 이하
+        { limit: 1000000000, rate: 0.3 }, // 5억 초과 ~ 10억 이하
+        { limit: 2000000000, rate: 0.4 }, // 10억 초과 ~ 20억 이하
+        { limit: Infinity, rate: 0.45 } // 20억 초과
+    ];
+
+    let reducedTax = 0;
+    let previousLimit = 0;
+
+    for (const bracket of taxBrackets) {
+        let effectiveRate = Math.max(0.1, bracket.rate - 0.1); // 청년 감면 적용된 세율
+        if (taxableAmount > bracket.limit) {
+            reducedTax += (bracket.limit - previousLimit) * effectiveRate;
+            previousLimit = bracket.limit;
+        } else {
+            reducedTax += (taxableAmount - previousLimit) * effectiveRate;
+            break;
+        }
+    }
+
+    reducedTax = Math.max(reducedTax, 0); // 음수 방지
+    const youthReduction = originalGiftTax - reducedTax;
+    return { reducedTax, youthReduction };
+}
+
 
 // 가산세 계산 로직
 function calculateLatePenalty(submissionDate, giftDate, giftTax) {
@@ -173,13 +183,9 @@ document.addEventListener('DOMContentLoaded', function () {
         newGiftEntry.style.marginTop = '10px'; // 간격 추가
 
         newGiftEntry.innerHTML = `
-            <input type="text" id="pastGiftAmount" name="pastGiftAmount" 
-                placeholder="금액 입력 (원)" class="amount-input" style="width: 150px;">
+            <input type="text" name="pastGiftAmount" placeholder="금액 입력 (원)" class="amount-input" style="width: 150px;">
             <input type="date" name="pastGiftDate" class="date-input" style="margin-left: 10px;">
-            <button type="button" class="remove-gift-button" style="
-                background-color: #f44336; color: white; border: none; 
-                padding: 5px 10px; cursor: pointer; border-radius: 5px; 
-                margin-left: 10px;">삭제</button>
+            <button type="button" class="remove-gift-button" style="background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px; margin-left: 10px;">삭제</button>
         `;
 
         // 삭제 버튼 동작 추가
@@ -189,22 +195,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         container.appendChild(newGiftEntry);
-
-        // 새로 생성된 필드에도 콤마 처리 이벤트 연결
-        const pastGiftAmountInput = newGiftEntry.querySelector('input[name="pastGiftAmount"]');
-        pastGiftAmountInput.addEventListener('input', function () {
-            const rawValue = pastGiftAmountInput.value.replace(/[^0-9]/g, ''); // 숫자 외 문자 제거
-            pastGiftAmountInput.value = parseInt(rawValue || '0', 10).toLocaleString();
-        });
     });
 });
-
-   // 전역 변수 선언
+          
+       // 전역 변수 선언
 let totalGiftAmount = 0; // 총 증여 금액
 let fatherGiftAmount = 0; // 부 증여 금액
 let motherGiftAmount = 0; // 모 증여 금액
 
-// *** 결혼 증여 모달 로직 ***
+// DOMContentLoaded 이벤트
+// *** 결혼증여 모달 로직 ***
 document.addEventListener('DOMContentLoaded', function () {
     const marriageGiftButton = document.getElementById('marriageGiftButton');
     const marriageGiftModal = document.getElementById('marriageGiftModal');
@@ -246,68 +246,51 @@ document.addEventListener('DOMContentLoaded', function () {
     fatherAmountInput.addEventListener('input', updateRemainingAmount);
     motherAmountInput.addEventListener('input', updateRemainingAmount);
 
-   // 저장 버튼 클릭 (모달에서 입력값을 저장)
-saveMarriageGiftButton.addEventListener('click', function () {
-    const fatherAmount = parseCurrency(fatherAmountInput.value || '0');
-    const motherAmount = parseCurrency(motherAmountInput.value || '0');
+    // 저장 버튼 클릭 (모달에서 입력값을 저장)
+    saveMarriageGiftButton.addEventListener('click', function () {
+        const fatherAmount = parseCurrency(fatherAmountInput.value || '0');
+        const motherAmount = parseCurrency(motherAmountInput.value || '0');
 
-    // 결혼 공제 계산 (부와 모 각각의 최대 공제 한도)
-    const maxFatherExemption = 150000000; // 부 최대 공제 한도: 1억 5천만 원
-    const maxMotherExemption = 100000000; // 모 최대 공제 한도: 1억 원
+        // 결혼 공제 계산 (부모 합산 최대 공제 한도)
+        const marriageExemption = calculateMarriageExemption(fatherAmount, motherAmount);
 
-    // 각각의 결혼 공제 금액 계산
-    const fatherExemption = Math.min(fatherAmount, maxFatherExemption);
-    const motherExemption = Math.min(motherAmount, maxMotherExemption);
-
-    // 결혼 공제 값 저장
-    fatherGiftAmount = fatherExemption;
-    motherGiftAmount = motherExemption;
-
-    // 사용자에게 결과 알림
-    alert(`결혼 공제 저장됨\n부: ${fatherGiftAmount.toLocaleString()} 원\n모: ${motherGiftAmount.toLocaleString()} 원`);
-    marriageGiftModal.style.display = 'none';
-});
+        // 사용자에게 결과 알림
+        alert(`결혼 공제 저장됨\n총 결혼 공제: ${marriageExemption.toLocaleString()} 원`);
+        marriageGiftModal.style.display = 'none';
+    });
 
     // 닫기 버튼 클릭 이벤트
-closeMarriageGiftModal.addEventListener('click', function () {
-    marriageGiftModal.style.display = 'none';
+    closeMarriageGiftModal.addEventListener('click', function () {
+        marriageGiftModal.style.display = 'none';
+    });
+
+    // 계산 버튼 이벤트
+    document.getElementById('calculateButton').addEventListener('click', calculateFinalTax);
 });
 
 // 결혼 공제 계산 함수
 function calculateMarriageExemption(fatherAmount, motherAmount) {
-    const maxFatherExemption = 100000000; // 부 최대 공제 한도: 1억 원
-    const maxMotherExemption = 100000000; // 모 최대 공제 한도: 1억 원
-    const totalMarriageExemptionLimit = 200000000; // 결혼 공제 총 한도: 2억 원
+    const maxMarriageExemption = 100000000; // 부모 합산 최대 공제 한도: 1억 원
+    const totalGiftAmountFromParents = fatherAmount + motherAmount;
 
-    // 각각 부모의 공제 한도 계산
-    const fatherExemption = Math.min(fatherAmount, maxFatherExemption);
-    const motherExemption = Math.min(motherAmount, maxMotherExemption);
-
-    // 결혼 공제 총합이 2억 원을 초과하지 않도록 제한
-    const totalMarriageExemption = Math.min(fatherExemption + motherExemption, totalMarriageExemptionLimit);
-
-    return totalMarriageExemption;
+    // 공제 최대 한도를 초과하지 않도록 제한
+    return Math.min(totalGiftAmountFromParents, maxMarriageExemption);
 }
 
 // 최종 공제 계산 함수
 function calculateExemptions(totalGiftAmount, relationship) {
-    // 1. 관계 공제 한도
+    // 1. 관계 공제 적용
     const relationshipExemption = getExemptionAmount(relationship);
 
-    // 2. 과거 증여 금액 합계 계산
-    const pastGiftAmounts = document.getElementsByName('pastGiftAmount');
-    let totalPastGiftAmount = 0;
+    // 2. 결혼 공제 적용
+    const fatherAmount = parseCurrency(document.getElementById('fatherAmountInput').value || '0');
+    const motherAmount = parseCurrency(document.getElementById('motherAmountInput').value || '0');
+    const marriageExemption = calculateMarriageExemption(fatherAmount, motherAmount);
 
-    for (const input of pastGiftAmounts) {
-        const pastAmount = parseCurrency(input.value || '0'); // 콤마 제거 후 숫자로 변환
-        totalPastGiftAmount += pastAmount;
-    }
+    // 3. 총 공제 합산 (증여 금액 초과 방지)
+    const totalExemption = Math.min(totalGiftAmount, relationshipExemption + marriageExemption);
 
-    // 3. 관계 공제에서 과거 증여 공제 차감
-    const currentExemption = Math.max(0, relationshipExemption - totalPastGiftAmount);
-
-    // 과거 공제 차감 결과 반환
-    return { currentExemption, totalPastGiftAmount };
+    return { relationshipExemption, marriageExemption, totalExemption };
 }
 
 // 최종 세금 계산 함수
@@ -316,48 +299,56 @@ function calculateFinalTax() {
     const relationship = document.getElementById('relationship').value;
 
     // 공제 계산
-    const { currentExemption, totalPastGiftAmount } = calculateExemptions(totalGiftAmount, relationship);
+    const { relationshipExemption, marriageExemption, totalExemption } = calculateExemptions(totalGiftAmount, relationship);
 
     // 과세 금액 계산
-    const taxableAmount = Math.max(0, totalGiftAmount - currentExemption); // 과세표준
-    const { tax: giftTax, breakdown, appliedDeduction } = calculateGiftTax(taxableAmount); // 증여세 계산 및 누진 공제 금액
+    const taxableAmount = Math.max(0, totalGiftAmount - totalExemption);
+
+    // 증여세 (감면 전)
+    const originalGiftTax = calculateGiftTax(taxableAmount);
+
+    // 청년 감면 여부 확인
+    const isYouth = document.getElementById('isYouthDropdown').value === 'yes';
+    let youthReduction = 0;
+    let finalGiftTax = originalGiftTax;
+
+    if (isYouth) {
+        const { reducedTax, youthReduction: reductionAmount } = applyYouthReduction(taxableAmount, originalGiftTax);
+        youthReduction = reductionAmount;
+        finalGiftTax = reducedTax;
+    }
 
     // 가산세 계산
     const giftDate = document.getElementById('giftDate').value;
     const submissionDate = document.getElementById('submissionDate').value;
-    const { penalty, message } = calculateLatePenalty(submissionDate, giftDate, giftTax);
+    const { penalty, message } = calculateLatePenalty(submissionDate, giftDate, finalGiftTax);
 
     // 최종 세금 합산
-    const totalTax = giftTax + penalty;
-
-    // 구간별 세율 계산 결과 생성
-    const breakdownHTML = breakdown.map(b => `
-        <p>${b.amount.toLocaleString()} 원 × ${(b.rate * 100).toFixed(0)}% = ${b.tax.toLocaleString()} 원</p>
-    `).join('');
+    const totalTax = finalGiftTax + penalty;
 
     // 결과 출력
     document.getElementById('result').innerHTML = `
         <h3>최종 계산 결과</h3>
-        <p>총 증여 금액: ${totalGiftAmount.toLocaleString()} 원</p>
-        <p>과거 증여 금액 합계: ${totalPastGiftAmount.toLocaleString()} 원</p>
-        <p>관계 공제 (과거 차감 후): ${currentExemption.toLocaleString()} 원</p>
+        <p>증여 금액: ${totalGiftAmount.toLocaleString()} 원</p>
+        <p>관계 공제: ${relationshipExemption.toLocaleString()} 원</p>
+        <p>결혼 공제: ${marriageExemption.toLocaleString()} 원</p>
+        <p>총 공제 금액: ${totalExemption.toLocaleString()} 원</p>
         <p>과세 금액: ${taxableAmount.toLocaleString()} 원</p>
-        <h4>구간별 세율 적용:</h4>
-        ${breakdownHTML}
-        <p>적용된 누진 공제: ${appliedDeduction.toLocaleString()} 원</p>
-        <p>증여세: ${giftTax.toLocaleString()} 원</p>
+        <p>증여세 (감면 전): ${originalGiftTax.toLocaleString()} 원</p>
+        <p>청년 증여세 감면 금액: ${youthReduction.toLocaleString()} 원</p>
+        <p>증여세 (감면 후): ${finalGiftTax.toLocaleString()} 원</p>
         <p>가산세: ${penalty.toLocaleString()} 원 (${message})</p>
         <p><strong>최종 납부세액: ${(totalTax).toLocaleString()} 원</strong></p>
     `;
 }
 
-// 증여세 신고 버튼 클릭 이벤트
+// 증여세 신고 버튼 이벤트
 document.getElementById('donationTaxButton').addEventListener('click', function () {
     const giftDateContainer = document.getElementById('giftDateContainer');
     const submissionDateContainer = document.getElementById('submissionDateContainer');
     const extendedPeriodContainer = document.getElementById('extendedPeriodContainer');
 
-    // 숨겨진 입력 필드 토글 (보이기/숨기기)
+    // 숨김/표시 토글
     const isVisible = giftDateContainer.style.display === 'block';
     const newDisplay = isVisible ? 'none' : 'block';
 
@@ -366,8 +357,5 @@ document.getElementById('donationTaxButton').addEventListener('click', function 
     extendedPeriodContainer.style.display = newDisplay;
 });
 
-// 계산 버튼 이벤트
 document.getElementById('calculateButton').addEventListener('click', calculateFinalTax);
-
-});
-
+                          
