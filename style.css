@@ -161,7 +161,6 @@ button:hover {
     border: 1px solid #ddd; /* 테두리 */
     border-radius: 5px; /* 둥근 모서리 */
     line-height: 1.6; /* 줄 간격 */
-    min-height: 15px; /* 최소 높이 설정 */
 }
 
 /* 취득세 계산기 버튼 스타일 */
