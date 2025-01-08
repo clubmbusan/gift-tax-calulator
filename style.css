@@ -182,34 +182,3 @@ button:hover {
     background-color: #0056b3; /* 마우스 오버 시 어두운 파란색 */
 }
 
-/* 작은 화면(최대 480px) 지원 */
-@media screen and (max-width: 480px) {
-    .calculator {
-        margin: 20px auto; /* 상하 여백 축소 */
-        padding: 10px; /* 내부 여백 축소 */
-    }
-
-    button {
-        font-size: 12px; /* 버튼 글꼴 크기 더 축소 */
-        padding: 8px 15px; /* 버튼 내부 여백 축소 */
-    }
-
-    .heir-entry {
-        flex-direction: column; /* 입력 필드를 세로 정렬 */
-        gap: 5px; /* 필드 간격 축소 */
-    }
-
-    .heir-entry input, .heir-entry select {
-        width: 100%; /* 입력 필드 너비를 100%로 확장 */
-    }
-
-    #result {
-        padding: 10px; /* 결과 영역 내부 여백 축소 */
-        font-size: 12px; /* 결과 텍스트 크기 축소 */
-    }
-
-    #extraTaxButtons button {
-        font-size: 12px; /* 하단 버튼 크기 축소 */
-        padding: 8px 15px; /* 하단 버튼 여백 축소 */
-    }
-}
