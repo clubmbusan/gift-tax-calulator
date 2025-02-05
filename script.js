@@ -86,13 +86,13 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('mixedStockPrice').addEventListener('input', updateMixedTotalGiftAmount);
 });
 
-// 관계별 공제 한도 계산
+// 관계별 공제 한도 계산 (2024년 기준 복원)
 function getExemptionAmount(relationship) {
     const exemptions = {
-        'adultChild': 100000000,       // 성년 자녀: 1억 원
-        'minorChild': 25000000,       // 미성년 자녀: 2,500만 원
-        'spouse': 700000000,          // 배우자: 7억 원
-        'sonInLawDaughterInLaw': 50000000, // 사위/며느리: 5천만 원
+        'adultChild': 50000000,       // 성년 자녀: 5천만 원 (이전 1억 원 → 복원)
+        'minorChild': 20000000,       // 미성년 자녀: 2천만 원 (이전 2,500만 원 → 복원)
+        'spouse': 600000000,          // 배우자: 6억 원 (이전 7억 원 → 복원)
+        'sonInLawDaughterInLaw': 50000000, // 사위/며느리: 5천만 원 (유지)
         'other': 10000000             // 타인: 1천만 원
     };
     return exemptions[relationship] || 0;
@@ -129,11 +129,12 @@ function getGiftAmount() {
 // 누진세 계산 함수 (청년 여부 상관없이 계산)
 function calculateGiftTax(taxableAmount) {
     const taxBrackets = [
-        { limit: 200000000, rate: 0.1, deduction: 0 }, // 2억 이하
-        { limit: 500000000, rate: 0.2, deduction: 20000000 }, // 2억 초과 ~ 5억 이하
-        { limit: 1000000000, rate: 0.3, deduction: 70000000 }, // 5억 초과 ~ 10억 이하
-        { limit: 2000000000, rate: 0.4, deduction: 170000000 }, // 10억 초과 ~ 20억 이하
-        { limit: Infinity, rate: 0.45, deduction: 370000000 } // 20억 초과
+        { limit: 50000000, rate: 0.1, deduction: 0 }, // 5천만 원 이하: 10%
+        { limit: 100000000, rate: 0.2, deduction: 10000000 }, // 1억 이하: 20%, 공제 1천만 원
+        { limit: 500000000, rate: 0.3, deduction: 40000000 }, // 5억 이하: 30%, 공제 4천만 원
+        { limit: 1000000000, rate: 0.4, deduction: 140000000 }, // 10억 이하: 40%, 공제 1억 4천만 원
+        { limit: 3000000000, rate: 0.5, deduction: 460000000 }, // 30억 이하: 50%, 공제 4억 6천만 원
+        { limit: Infinity, rate: 0.6, deduction: 1060000000 } // 30억 초과: 60%, 공제 10억 6천만 원
     ];
 
     let tax = 0;
