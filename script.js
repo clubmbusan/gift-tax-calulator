@@ -140,14 +140,24 @@ function calculateGiftTax(taxableAmount) {
     let tax = 0;
     let previousLimit = 0;
 
-    for (const bracket of taxBrackets) {
-        if (taxableAmount > bracket.limit) {
-            tax += (bracket.limit - previousLimit) * bracket.rate;
-            previousLimit = bracket.limit;
-        } else {
-            tax += (taxableAmount - previousLimit) * bracket.rate;
-            tax -= bracket.deduction; // 누진 공제 적용
-            break;
+    // 첫 번째 구간에서 누진공제를 적용하지 않음
+    if (taxableAmount <= taxBrackets[0].limit) {
+        tax = taxableAmount * taxBrackets[0].rate;
+    } else {
+        // 첫 번째 구간 계산
+        tax += (taxBrackets[0].limit - previousLimit) * taxBrackets[0].rate;
+        previousLimit = taxBrackets[0].limit;
+
+        // 두 번째 구간부터는 누진공제를 적용
+        for (let i = 1; i < taxBrackets.length; i++) {
+            if (taxableAmount > taxBrackets[i].limit) {
+                tax += (taxBrackets[i].limit - previousLimit) * taxBrackets[i].rate;
+                previousLimit = taxBrackets[i].limit;
+            } else {
+                tax += (taxableAmount - previousLimit) * taxBrackets[i].rate;
+                tax -= taxBrackets[i].deduction; // 누진 공제 적용
+                break;
+            }
         }
     }
 
