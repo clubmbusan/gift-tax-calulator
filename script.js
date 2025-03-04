@@ -129,29 +129,21 @@ function getGiftAmount() {
 // 누진세 계산 함수 (청년 여부 상관없이 계산)
 function calculateGiftTax(taxableAmount) {
     const taxBrackets = [
-        { limit: 50000000, rate: 0.1, deduction: 0 }, // 5천만 원 이하: 10%, 공제 없음
-        { limit: 100000000, rate: 0.2, deduction: 0 }, // 1억 이하: 20%, 공제 없음
-        { limit: 500000000, rate: 0.3, deduction: 40000000 }, // 5억 이하: 30%, 공제 4천만 원
-        { limit: 1000000000, rate: 0.4, deduction: 140000000 }, // 10억 이하: 40%, 공제 1억 4천만 원
-        { limit: 3000000000, rate: 0.5, deduction: 460000000 }, // 30억 이하: 50%, 공제 4억 6천만 원
-        { limit: Infinity, rate: 0.6, deduction: 1060000000 } // 30억 초과: 60%, 공제 10억 6천만 원
+        { limit: 50000000, rate: 0.1, deduction: 0 }, // 5천만 원 이하
+        { limit: 100000000, rate: 0.2, deduction: 10000000 }, // 1억 원 이하
+        { limit: 500000000, rate: 0.3, deduction: 40000000 }, // 5억 원 이하
+        { limit: 1000000000, rate: 0.4, deduction: 140000000 }, // 10억 원 이하
+        { limit: 3000000000, rate: 0.5, deduction: 460000000 }, // 30억 원 이하
+        { limit: Infinity, rate: 0.6, deduction: 1060000000 } // 30억 원 초과
     ];
 
-    let tax = 0;
-    let previousLimit = 0;
-
-    // 첫 번째 구간과 두 번째 구간에서 세액 계산 (누진공제는 적용하지 않음)
-    for (let i = 0; i < 2; i++) {
-        const bracket = taxBrackets[i];
-        
-        if (taxableAmount > bracket.limit) {
-            tax += (bracket.limit - previousLimit) * bracket.rate;
-            previousLimit = bracket.limit;
-        } else {
-            tax += (taxableAmount - previousLimit) * bracket.rate;
-            break;
+    for (let bracket of taxBrackets) {
+        if (taxableAmount <= bracket.limit) {
+            return Math.max(taxableAmount * bracket.rate - bracket.deduction, 0);
         }
     }
+    return 0;
+}
 
     // 1억 초과 부분에 대해서만 누진공제 적용
     if (taxableAmount > taxBrackets[1].limit) {
