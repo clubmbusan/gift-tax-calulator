@@ -128,21 +128,25 @@ function getGiftAmount() {
 
 // 누진세 계산 함수 (청년 여부 상관없이 계산)
 function calculateGiftTax(taxableAmount) {
-    const taxBrackets = [
-        { limit: 50000000, rate: 0.1, deduction: 0 }, // 5천만 원 이하
-        { limit: 100000000, rate: 0.2, deduction: 10000000 }, // 1억 원 이하
-        { limit: 500000000, rate: 0.3, deduction: 40000000 }, // 5억 원 이하
-        { limit: 1000000000, rate: 0.4, deduction: 140000000 }, // 10억 원 이하
-        { limit: 3000000000, rate: 0.5, deduction: 460000000 }, // 30억 원 이하
-        { limit: Infinity, rate: 0.6, deduction: 1060000000 } // 30억 원 초과
-    ];
-
-    for (let bracket of taxBrackets) {
-        if (taxableAmount <= bracket.limit) {
-            return Math.max(taxableAmount * bracket.rate - bracket.deduction, 0);
-        }
-    }
-    return 0;
+  if (taxableAmount <= 50000000) {
+    // 5천만 원 이하: 10% 적용, 공제 없음
+    return Math.max(taxableAmount * 0.1, 0);
+  } else if (taxableAmount <= 100000000) {
+    // 5천만 원 초과 ~ 1억 원: 20% 적용, 누진공제 1천만 원
+    return Math.max(taxableAmount * 0.2 - 10000000, 0);
+  } else if (taxableAmount <= 500000000) {
+    // 1억 원 초과 ~ 5억 원: 30% 적용, 누진공제 4천만 원
+    return Math.max(taxableAmount * 0.3 - 40000000, 0);
+  } else if (taxableAmount <= 1000000000) {
+    // 5억 원 초과 ~ 10억 원: 40% 적용, 누진공제 1억4천만 원
+    return Math.max(taxableAmount * 0.4 - 140000000, 0);
+  } else if (taxableAmount <= 3000000000) {
+    // 10억 원 초과 ~ 30억 원: 50% 적용, 누진공제 4억6천만 원
+    return Math.max(taxableAmount * 0.5 - 460000000, 0);
+  } else {
+    // 30억 원 초과: 60% 적용, 누진공제 10억6천만 원
+    return Math.max(taxableAmount * 0.6 - 1060000000, 0);
+  }
 }
   
 // 청년 감면 적용 (누진 공제 반영)
