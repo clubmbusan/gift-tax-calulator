@@ -144,26 +144,7 @@ function calculateGiftTax(taxableAmount) {
     }
     return 0;
 }
-
-    // 1억 초과 부분에 대해서만 누진공제 적용
-    if (taxableAmount > taxBrackets[1].limit) {
-        for (let i = 2; i < taxBrackets.length; i++) {
-            const bracket = taxBrackets[i];
-
-            if (taxableAmount > bracket.limit) {
-                tax += (bracket.limit - previousLimit) * bracket.rate;
-                previousLimit = bracket.limit;
-            } else {
-                tax += (taxableAmount - previousLimit) * bracket.rate;
-                tax -= bracket.deduction; // 누진 공제 적용
-                break;
-            }
-        }
-    }
-
-    return Math.max(tax, 0); // 음수 방지
-}
-
+  
 // 청년 감면 적용 (누진 공제 반영)
 function applyYouthReduction(originalGiftTax) {
     // 총 세금의 10%를 감면
