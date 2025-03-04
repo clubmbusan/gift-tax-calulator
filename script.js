@@ -129,8 +129,8 @@ function getGiftAmount() {
 // 누진세 계산 함수 (청년 여부 상관없이 계산)
 function calculateGiftTax(taxableAmount) {
     const taxBrackets = [
-        { limit: 50000000, rate: 0.1, deduction: 0 }, // 5천만 원 이하: 10%
-        { limit: 100000000, rate: 0.2, deduction: 10000000 }, // 1억 이하: 20%, 공제 1천만 원
+        { limit: 50000000, rate: 0.1, deduction: 0 }, // 5천만 원 이하: 10%, 공제 없음
+        { limit: 100000000, rate: 0.2, deduction: 0 }, // 1억 이하: 20%, 공제 없음
         { limit: 500000000, rate: 0.3, deduction: 40000000 }, // 5억 이하: 30%, 공제 4천만 원
         { limit: 1000000000, rate: 0.4, deduction: 140000000 }, // 10억 이하: 40%, 공제 1억 4천만 원
         { limit: 3000000000, rate: 0.5, deduction: 460000000 }, // 30억 이하: 50%, 공제 4억 6천만 원
@@ -140,22 +140,30 @@ function calculateGiftTax(taxableAmount) {
     let tax = 0;
     let previousLimit = 0;
 
-    // 첫 번째 구간에서 누진공제를 적용하지 않음
-    if (taxableAmount <= taxBrackets[0].limit) {
-        tax = taxableAmount * taxBrackets[0].rate;
-    } else {
-        // 첫 번째 구간 계산
-        tax += (taxBrackets[0].limit - previousLimit) * taxBrackets[0].rate;
-        previousLimit = taxBrackets[0].limit;
+    // 첫 번째 구간과 두 번째 구간에서 세액 계산 (누진공제는 적용하지 않음)
+    for (let i = 0; i < 2; i++) {
+        const bracket = taxBrackets[i];
+        
+        if (taxableAmount > bracket.limit) {
+            tax += (bracket.limit - previousLimit) * bracket.rate;
+            previousLimit = bracket.limit;
+        } else {
+            tax += (taxableAmount - previousLimit) * bracket.rate;
+            break;
+        }
+    }
 
-        // 두 번째 구간부터는 누진공제를 적용
-        for (let i = 1; i < taxBrackets.length; i++) {
-            if (taxableAmount > taxBrackets[i].limit) {
-                tax += (taxBrackets[i].limit - previousLimit) * taxBrackets[i].rate;
-                previousLimit = taxBrackets[i].limit;
+    // 1억 초과 부분에 대해서만 누진공제 적용
+    if (taxableAmount > taxBrackets[1].limit) {
+        for (let i = 2; i < taxBrackets.length; i++) {
+            const bracket = taxBrackets[i];
+
+            if (taxableAmount > bracket.limit) {
+                tax += (bracket.limit - previousLimit) * bracket.rate;
+                previousLimit = bracket.limit;
             } else {
-                tax += (taxableAmount - previousLimit) * taxBrackets[i].rate;
-                tax -= taxBrackets[i].deduction; // 누진 공제 적용
+                tax += (taxableAmount - previousLimit) * bracket.rate;
+                tax -= bracket.deduction; // 누진 공제 적용
                 break;
             }
         }
